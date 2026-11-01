@@ -49,6 +49,9 @@ select{padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px
 .chead h3{margin:0}
 .lbtn{display:inline-block;background:#fff;color:var(--pri);border:1.5px solid var(--pri);border-radius:999px;padding:6px 14px;font-size:13.5px;text-decoration:none;font-weight:600}
 .lbtns{display:inline-flex;flex-wrap:wrap;gap:6px}
+.lgrp{display:inline-flex;align-items:center;gap:4px}
+.dlbtn{font-size:12.5px;color:var(--pri);text-decoration:none;border-bottom:1px dashed var(--pri);padding:2px 0}
+.upl{display:inline-block;margin-top:4px;font-size:12.5px;color:var(--pri);border:1px dashed var(--pri);border-radius:8px;padding:4px 10px;cursor:pointer}
 .lbtn.seen{background:var(--pri2);border-color:transparent}
 .rtabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .warn{color:var(--warn)}
@@ -199,6 +202,10 @@ function subInfo(kind, rnd, target) {
 }
 
 const seenLinks = new Set();
+function driveId(u) {
+  const m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/) || u.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/);
+  return m ? m[1] : '';
+}
 function linkBtn(kind, rnd, target) {
   const k = kind + '|' + rnd + '|' + target;
   const urls = String((S.links && S.links[k]) || '').split(/\s+/).filter(u => /^https?:\/\//i.test(u));
@@ -206,7 +213,11 @@ function linkBtn(kind, rnd, target) {
   const multi = urls.length > 1;
   return '<span class="lbtns">' + urls.map((u, i) => {
     const id = k + '#' + i, seen = seenLinks.has(id), no = multi ? ' ' + (i + 1) : '';
-    return '<a class="lbtn' + (seen ? ' seen' : '') + '" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-lk="' + esc(id) + '" data-no="' + no + '">' + (seen ? '✓ 미션' + no + ' 다시 보기' : '미션 확인하기' + no + ' ↗') + '</a>';
+    const did = driveId(u);
+    // 드라이브 파일은 바로보기(뷰어) 주소로 열고, 옆에 다운로드 링크를 함께 제공
+    const href = did ? 'https://drive.google.com/file/d/' + did + '/view' : u;
+    const dl = did ? '<a class="dlbtn" href="https://drive.google.com/uc?export=download&id=' + did + '" target="_blank" rel="noopener noreferrer" title="바로보기가 안 되면 파일 받기">⬇ 받기</a>' : '';
+    return '<span class="lgrp"><a class="lbtn' + (seen ? ' seen' : '') + '" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" data-lk="' + esc(id) + '" data-no="' + no + '">' + (seen ? '✓ 미션' + no + ' 다시 보기' : '미션 확인하기' + no + ' ↗') + '</a>' + dl + '</span>';
   }).join('') + '</span>';
 }
 document.addEventListener('click', e => {
@@ -429,6 +440,7 @@ function adminRes() {
 }
 
 let LK = null, LD = null, LM = null, LKR = 1;
+function upl(k) { return '<div><label class="upl">📎 PDF 올리기 (5MB 이하)<input type="file" accept="application/pdf" data-up="' + esc(k) + '" style="display:none"></label></div>'; }
 function adminLinks() {
   if (!LK) { LK = Object.assign({}, A.links); LD = Object.assign({}, A.subDates); LM = JSON.parse(JSON.stringify(A.missions || {})); }
   const R = S.config.rounds;
@@ -446,13 +458,30 @@ function adminLinks() {
     '<div class="foot"><span></span><button class="svl">저장</button></div></div>';
   h += '<div class="card"><h3>' + LKR + '회차 미션 안내</h3>' + mform('팀') + mform('개인') + '</div>';
   h += '<div class="card"><h3>' + LKR + '회차 팀 미션 링크·제출일</h3><div class="scroll"><table><tr><th class="l">팀</th><th class="l">링크</th><th class="l">제출일</th></tr>' +
-    S.teams.map(t => { const k = '팀|' + LKR + '|' + t; return '<tr><td class="l" style="width:70px">' + esc(t) + '</td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea></td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') + '</table></div></div>';
+    S.teams.map(t => { const k = '팀|' + LKR + '|' + t; return '<tr><td class="l" style="width:70px">' + esc(t) + '</td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea>' + upl(k) + '</td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') + '</table></div></div>';
   h += '<div class="card"><h3>' + LKR + '회차 개인 미션 링크·제출일</h3><div class="scroll"><table><tr><th class="l">서포터</th><th class="l">링크</th><th class="l">제출일</th></tr>' +
-    S.members.map(m => { const k = '개인|' + LKR + '|' + m.id; return '<tr><td class="l" style="width:130px">' + esc(m.name) + ' <span class="sub">' + esc(m.team) + ' · ' + esc(m.anon || '') + '</span></td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea></td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') +
+    S.members.map(m => { const k = '개인|' + LKR + '|' + m.id; return '<tr><td class="l" style="width:130px">' + esc(m.name) + ' <span class="sub">' + esc(m.team) + ' · ' + esc(m.anon || '') + '</span></td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea>' + upl(k) + '</td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') +
     '</table></div><div class="foot"><span class="sub">제출일은 비워 두면 「제출일 미등록」으로 표시됩니다.</span><button class="svl">저장</button></div></div>';
   $('#body').innerHTML = h;
   document.querySelectorAll('[data-lr]').forEach(el => el.onclick = () => { LKR = Number(el.dataset.lr); adminLinks(); });
   document.querySelectorAll('[data-lk]').forEach(el => { const f = () => { LK[el.dataset.lk] = el.value.trim(); }; el.oninput = f; el.onchange = f; });
+  document.querySelectorAll('[data-up]').forEach(el => el.onchange = async () => {
+    const f = el.files[0]; if (!f) return;
+    const k = el.dataset.up;
+    try {
+      if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) throw new Error('PDF 파일만 올릴 수 있습니다.');
+      if (f.size > 5 * 1024 * 1024) throw new Error('파일이 5MB를 넘습니다 (' + (f.size / 1048576).toFixed(1) + 'MB). 줄여서 올리거나 드라이브 링크로 등록해 주세요.');
+      const cur = (LK[k] || '').split(/\s+/).filter(Boolean);
+      if (cur.length >= 5) throw new Error('링크는 대상당 최대 5개까지 등록할 수 있습니다.');
+      flash('업로드 중입니다. 잠시만 기다려 주세요…');
+      const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = () => rej(new Error('파일을 읽지 못했습니다.')); r.readAsDataURL(f); });
+      const res = await api('uploadMissionFile', { key: k, data });
+      cur.push(res.url); LK[k] = cur.join('\n');
+      adminLinks();
+      if (res.shared) flash('PDF를 올렸습니다. 아래 「저장」을 눌러야 평가 화면에 반영됩니다.');
+      else flash('올렸지만 이 계정에서는 「링크 공유」가 막혀 있어 평가자가 열 수 없습니다. 드라이브에서 공유 설정을 확인해 주세요.', 'err');
+    } catch (e) { el.value = ''; fail(e); }
+  });
   document.querySelectorAll('[data-ld]').forEach(el => { const f = () => { LD[el.dataset.ld] = el.value; }; el.oninput = f; el.onchange = f; });
   document.querySelectorAll('[data-mi]').forEach(el => { const f = () => { const k = el.dataset.mi; LM[k] = LM[k] || {}; LM[k][el.dataset.f] = el.value; }; el.oninput = f; el.onchange = f; });
   document.querySelectorAll('.svl').forEach(b => b.onclick = async () => {
