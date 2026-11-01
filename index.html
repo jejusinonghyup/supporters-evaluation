@@ -40,6 +40,8 @@ th:first-child,td:first-child,th.l,td.l{text-align:left}
 th{color:var(--mute);font-weight:600}
 .scroll{overflow-x:auto}
 .msg{padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:14px}
+.busy button{pointer-events:none;opacity:.65}
+#busy{display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100;background:#222;color:#fff;padding:9px 18px;border-radius:999px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;max-width:min(92vw,560px);box-shadow:0 4px 16px rgba(0,0,0,.25);margin:0}
 .msg.err{background:#fdeceb;color:var(--bad)}
 .msg.ok{background:var(--pri2);color:var(--pri)}
@@ -96,9 +98,29 @@ let S = null, A = null, tab = '', round = 1, iround = 1, adminTab = 'res';
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// 처리 중 표시 + 처리하는 동안 버튼 중복 클릭 방지
+let pend = 0, busyT = null;
+function busy(on) {
+  pend = Math.max(0, pend + (on ? 1 : -1));
+  document.body.classList.toggle('busy', pend > 0);
+  if (pend > 0) {
+    if (!busyT) busyT = setTimeout(() => {
+      let el = document.getElementById('busy');
+      if (!el) { el = document.createElement('div'); el.id = 'busy'; el.textContent = '처리 중입니다…'; document.body.appendChild(el); }
+      el.style.display = 'block';
+    }, 200);
+  } else {
+    clearTimeout(busyT); busyT = null;
+    const el = document.getElementById('busy'); if (el) el.style.display = 'none';
+  }
+}
 async function api(action, data = {}) {
-  const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, idToken: ID_TOKEN }, data)) });
-  const j = await r.json();
+  busy(true);
+  let j;
+  try {
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, idToken: ID_TOKEN }, data)) });
+    j = await r.json();
+  } finally { busy(false); }
   if (!j.ok) {
     const raw = j.error || '오류';
     const m = raw.match(/^([A-Z_]+): (.*)$/);
@@ -503,7 +525,7 @@ function adminLinks() {
     try {
       await api('saveLinks', { links: LK, dates: LD });
       await api('saveMissionInfo', { info: LM });
-      await loadAdmin(); const me = await api('me'); S.links = me.links; S.subDates = me.subDates; S.missions = me.missions;
+      const [, me] = await Promise.all([loadAdmin(), api('me')]); S.links = me.links; S.subDates = me.subDates; S.missions = me.missions;
       LK = null; adminLinks(); flash('저장했습니다');
     } catch (e) { fail(e); }
   });
@@ -548,7 +570,7 @@ function adminRoster() {
       RE.forEach(e => { if (e.role === '멘토' && map[e.team]) e.team = map[e.team]; });
       await api('saveMembers', { members: RM });
       await api('saveEvaluators', { evaluators: RE });
-      await loadAdmin(); const me = await api('me'); S.members = me.members; S.teams = me.teams;
+      const [, me] = await Promise.all([loadAdmin(), api('me')]); S.members = me.members; S.teams = me.teams;
       LK = null; LM = null; LD = null;
       adminRoster.init = false; adminRoster(); flash('팀 이름을 적용했습니다');
     } catch (e) { adminRoster.init = false; fail(e); }
@@ -558,7 +580,7 @@ function adminRoster() {
   $('#savem').onclick = async () => {
     try {
       await api('saveMembers', { members: RM });
-      await loadAdmin(); const me = await api('me'); S.members = me.members; S.teams = me.teams;
+      const [, me] = await Promise.all([loadAdmin(), api('me')]); S.members = me.members; S.teams = me.teams;
       adminRoster.init = false; adminRoster(); flash('서포터즈 명단을 저장했습니다');
     } catch (e) { fail(e); }
   };
