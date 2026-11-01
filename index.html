@@ -514,7 +514,11 @@ function adminRoster() {
   if (!adminRoster.init) { RM = A.members.map(x => Object.assign({}, x)); RE = A.evaluators.map(x => Object.assign({}, x)); adminRoster.init = true; }
   const teams = Array.from(new Set(RM.map(m => m.team).filter(Boolean)));
   const inp = 'padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px;width:100%';
+  const allTeams = Array.from(new Set(RM.map(m => m.team).concat(RE.filter(e => e.role === '멘토').map(e => e.team)).filter(Boolean)));
   let h = '<datalist id="tl">' + teams.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist>' +
+    '<div class="card"><h3>팀 이름 <span class="sub">' + allTeams.length + '개 팀</span></h3><div class="sub" style="margin-bottom:8px">팀 이름을 바꾸면 서포터즈 명단과 멘토 담당 팀에 한 번에 적용되고 바로 저장됩니다. <b>평가를 시작하기 전에 정해 주세요.</b> 평가·링크 입력이 시작된 뒤 바꾸면 기존 점수와 링크가 이전 팀 이름에 남습니다.</div>' +
+    allTeams.map((t, i) => '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span class="sub" style="width:110px">' + esc(t) + ' (' + RM.filter(m => m.team === t).length + '명)</span><span>→</span><input style="' + inp + ';max-width:260px" data-tn="' + esc(t) + '" placeholder="새 팀 이름 (예: 한라봉팀)"></div>').join('') +
+    '<div class="foot"><span></span><button id="rnteam">팀 이름 적용</button></div></div>' +
     '<div class="card"><h3>서포터즈 명단 <span class="sub">' + RM.length + '명</span></h3><div class="sub" style="margin-bottom:8px">소속 팀은 직접 입력하거나 기존 팀 이름을 고르세요. 팀 이름이 같아야 같은 팀으로 집계됩니다.</div><div class="scroll"><table><tr><th class="l">ID</th><th class="l">이름</th><th class="l">소속 팀</th><th></th></tr>' +
     RM.map((m, i) => '<tr><td class="l sub">' + esc(m.id || '신규') + '</td><td><input style="' + inp + '" data-k="m" data-i="' + i + '" data-f="name" value="' + esc(m.name) + '"></td><td><input style="' + inp + '" list="tl" data-k="m" data-i="' + i + '" data-f="team" value="' + esc(m.team) + '"></td><td><button class="ghost" data-del="m" data-i="' + i + '">삭제</button></td></tr>').join('') +
     '</table></div><div class="foot"><button class="ghost" id="addm">+ 서포터 추가</button><button id="savem">서포터즈 저장</button></div></div>';
@@ -531,6 +535,24 @@ function adminRoster() {
     const arr = b.dataset.del === 'm' ? RM : RE; const i = Number(b.dataset.i);
     if (confirm((arr[i].name || '이 항목') + ' 을(를) 목록에서 삭제할까요? 저장해야 반영됩니다.')) { arr.splice(i, 1); adminRoster(); }
   });
+  $('#rnteam').onclick = async () => {
+    const map = {};
+    document.querySelectorAll('[data-tn]').forEach(el => { const v = el.value.trim(); if (v && v !== el.dataset.tn) map[el.dataset.tn] = v; });
+    const names = Object.keys(map);
+    if (!names.length) return flash('바꿀 팀 이름을 입력해 주세요.', 'err');
+    const finals = allTeams.map(t => map[t] || t);
+    if (new Set(finals).size !== finals.length) return flash('팀 이름이 서로 같을 수 없습니다.', 'err');
+    if (!confirm(names.map(t => t + ' → ' + map[t]).join('\n') + '\n\n이대로 적용하고 저장할까요?')) return;
+    try {
+      RM.forEach(m => { if (map[m.team]) m.team = map[m.team]; });
+      RE.forEach(e => { if (e.role === '멘토' && map[e.team]) e.team = map[e.team]; });
+      await api('saveMembers', { members: RM });
+      await api('saveEvaluators', { evaluators: RE });
+      await loadAdmin(); const me = await api('me'); S.members = me.members; S.teams = me.teams;
+      LK = null; LM = null; LD = null;
+      adminRoster.init = false; adminRoster(); flash('팀 이름을 적용했습니다');
+    } catch (e) { adminRoster.init = false; fail(e); }
+  };
   $('#addm').onclick = () => { RM.push({ id: '', name: '', team: teams[0] || '' }); adminRoster(); };
   $('#adde').onclick = () => { RE.push({ id: '', name: '', role: '멘토', team: '', email: '' }); adminRoster(); };
   $('#savem').onclick = async () => {
