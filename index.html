@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서포터즈 평가</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1f2a24;--mute:#6b776f;--line:#e2e6e0;--pri:#2f7d4f;--pri2:#e8f3ec;--warn:#b4561b;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
+header{background:var(--pri);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+header h1{margin:0;font-size:17px}
+header .who{font-size:13px;opacity:.9}
+main{max-width:860px;margin:0 auto;padding:14px 12px 60px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 4px;font-size:16px}
+.sub{color:var(--mute);font-size:13px}
+.item{padding:10px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.item .nm{font-weight:600}
+.item .ds{color:var(--mute);font-size:12.5px;margin-top:2px}
+input[type=number]{width:74px;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:16px;text-align:right}
+textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;resize:vertical}
+button{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer}
+button.ghost{background:#fff;color:var(--pri);border:1px solid var(--pri)}
+button:disabled{opacity:.5;cursor:default}
+.total{font-weight:700;color:var(--pri)}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--pri2);color:var(--pri)}
+.badge.w{background:#fbeee3;color:var(--warn)}
+.badge.g{background:#eee;color:#666}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+th{color:var(--mute);font-weight:600}
+.scroll{overflow-x:auto}
+.msg{padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:14px}
+.msg.err{background:#fdeceb;color:var(--bad)}
+.msg.ok{background:var(--pri2);color:var(--pri)}
+select{padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+.note{background:#fffbe9;border:1px solid #f0e3a8;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px}
+.center{text-align:center;padding:60px 20px;color:var(--mute)}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.chead h3{margin:0}
+.lbtn{display:inline-block;background:#fff;color:var(--pri);border:1.5px solid var(--pri);border-radius:999px;padding:6px 14px;font-size:13.5px;text-decoration:none;font-weight:600}
+.lbtns{display:inline-flex;flex-wrap:wrap;gap:6px}
+.lbtn.seen{background:var(--pri2);border-color:transparent}
+.rtabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.warn{color:var(--warn)}
+.val{font-weight:700;color:var(--pri);min-width:56px;text-align:right}
+.val.none{color:var(--mute);font-weight:400}
+.barrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+.step{width:36px;height:36px;padding:0;border-radius:50%;background:#fff;color:var(--pri);border:1px solid var(--line);font-size:20px;line-height:1;flex:none}
+.bar{position:relative;flex:1;height:34px;border-radius:999px;background-color:var(--pri2);border:1px solid var(--line);cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none;background-image:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),rgba(47,125,79,.2) calc(10% - 1px),rgba(47,125,79,.2) 10%)}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--pri);opacity:.88;pointer-events:none}
+.bar.empty .fill{opacity:0}
+.bar .knob{position:absolute;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;background:#fff;border:3px solid var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.25);pointer-events:none}
+.bar:focus-visible{outline:3px solid #9ccdb0}
+.bar.locked{cursor:default;opacity:.7}
+td.dim,th.dim{color:#9aa39d}
+.mbox{background:#f3f8f5;border:1px solid #cfe3d6;border-radius:10px;padding:10px 12px;margin-top:10px}
+.mbox .mh{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px}
+.mbox .due{color:var(--warn);font-weight:700;font-size:13px}
+.mbox .mt{font-weight:700;margin-top:4px}
+.mbox .md{font-size:13.5px;color:#34413a;margin-top:2px;white-space:pre-wrap}
+.mbox.none{background:#f4f4f2;border-color:var(--line);color:var(--mute);font-size:13px}
+.subline{margin:2px 0 6px;font-size:13px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.gapbanner{position:sticky;top:var(--demoH,0px);z-index:15;background:#fdeceb;border:1.5px solid #e57373;color:#b3261e;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px;line-height:1.55;box-shadow:0 2px 8px rgba(179,38,30,.15)}
+.gapbanner[hidden]{display:none}
+.submitbar{position:sticky;bottom:0;z-index:12;background:#fff;border-top:1px solid var(--line);margin:0 -12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.submitbar button{padding:11px 22px;font-size:15px}
+</style>
+</head>
+<body>
+<header><h1>서포터즈 평가</h1><div class="who" id="who"></div></header>
+<main id="app"><div class="center">불러오는 중…</div></main>
+
+<script>
+// ★ 아래 두 값을 넣으세요: Apps Script 웹 앱 배포 URL, Google OAuth 클라이언트 ID
+const API = 'https://script.google.com/macros/s/AKfycb_REPLACE_ME/exec';
+const CLIENT_ID = '여기에_OAuth_클라이언트_ID.apps.googleusercontent.com';
+
+let ID_TOKEN = sessionStorage.getItem('sup_idtoken') || '';
+let S = null, A = null, tab = '', round = 1, iround = 1, adminTab = 'res';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function api(action, data = {}) {
+  const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, idToken: ID_TOKEN }, data)) });
+  const j = await r.json();
+  if (!j.ok) {
+    const raw = j.error || '오류';
+    const m = raw.match(/^([A-Z_]+): (.*)$/);
+    const e = new Error(m ? m[2] : raw);
+    e.code = m ? m[1] : '';
+    throw e;
+  }
+  return j;
+}
+
+// ===== Google 로그인 =====
+let gReady = false;
+function renderGBtn(id) {
+  if (!window.google || !google.accounts) return setTimeout(() => renderGBtn(id), 200);
+  const el = document.getElementById(id); if (!el) return;
+  if (!gReady) { google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onCred, auto_select: true }); gReady = true; }
+  google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', text: 'signin_with', locale: 'ko' });
+}
+function showLogin(msg) {
+  $('#who').textContent = '';
+  $('#app').innerHTML = (msg ? '<div class="msg err">' + esc(msg) + '</div>' : '') +
+    '<div class="center"><p>서포터즈 평가는 Google 계정으로 로그인합니다.<br>평가자로 등록된 계정만 이용할 수 있습니다.</p><div id="gbtn" style="display:inline-block"></div></div>';
+  renderGBtn('gbtn');
+}
+function onCred(resp) {
+  ID_TOKEN = resp.credential;
+  sessionStorage.setItem('sup_idtoken', ID_TOKEN);
+  if (S) { const d = document.getElementById('relogin'); if (d) d.remove(); flash('다시 로그인되었습니다. 저장 버튼을 다시 눌러 주세요.'); }
+  else boot();
+}
+function fail(e) {
+  if (e.code === 'EXPIRED' || e.code === 'LOGIN_REQUIRED') {
+    if (!document.getElementById('relogin')) {
+      const d = document.createElement('div'); d.id = 'relogin'; d.className = 'msg err';
+      d.innerHTML = '로그인이 만료되었습니다. 다시 로그인한 뒤 저장을 눌러 주세요.<div id="gbtn2" style="margin-top:6px"></div>';
+      $('#app').prepend(d); renderGBtn('gbtn2');
+    }
+  } else flash(e.message || String(e), 'err');
+}
+function logout() {
+  sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
+  if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
+  location.reload();
+}
+
+function flash(text, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = 'msg ' + type; el.textContent = text;
+  $('#app').prepend(el); setTimeout(() => el.remove(), 3500);
+}
+
+async function boot() {
+  if (!ID_TOKEN) return showLogin();
+  try {
+    S = await api('me');
+    $('#who').innerHTML = esc(S.user.name + (S.user.team ? ' · ' + S.user.team : '') + ' (' + S.user.role + ')') + ' · <a href="#" id="lo" style="color:#fff">로그아웃</a>';
+    $('#lo').onclick = e => { e.preventDefault(); logout(); };
+    if (S.user.role === '관리자') { await loadAdmin(); tab = 'admin'; } else tab = 'team';
+    render();
+  } catch (e) {
+    S = null;
+    if (e.code === 'NOT_REGISTERED') {
+      if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
+      sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
+      return showLogin(e.message);
+    }
+    sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
+    showLogin(e.code === 'EXPIRED' || e.code === 'LOGIN_REQUIRED' ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : e.message);
+  }
+}
+
+async function loadAdmin() { A = await api('adminData'); }
+
+function render() {
+  if (S.user.role === '관리자') return renderAdmin();
+  const tabs = [['team', '팀 평가'], ['ind', '개인 평가']];
+  $('#app').innerHTML =
+    (S.user.role === '멘토' && S.config.excludeOwnTeam ? '<div class="note">멘토는 <b>본인 팀과 본인 팀 팀원은 평가하지 않습니다</b>(이해충돌 방지). 나머지 팀만 표시됩니다.</div>' : '') +
+    '<div class="tabs">' + tabs.map(t => '<div class="tab ' + (tab === t[0] ? 'on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</div>').join('') + '</div><div id="body"></div>';
+  document.querySelectorAll('.tab').forEach(el => el.onclick = () => { tab = el.dataset.t; render(); });
+  tab === 'team' ? renderTeam() : renderInd();
+}
+
+const fmtD = s => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(s || ''); return m ? Number(m[1]) + '/' + Number(m[2]) : ''; };
+const dayDiff = (a, b) => Math.round((new Date(a + 'T00:00:00') - new Date(b + 'T00:00:00')) / 86400000);
+
+// 회차별 미션 안내(주제·내용·제출기한)
+function missionBox(kind, rnd) {
+  const title = kind === '팀' ? '팀 미션' : '개인 미션';
+  const mi = S.missions && S.missions[kind + '|' + rnd];
+  if (!mi || (!mi.topic && !mi.desc && !mi.due)) return '<div class="mbox none"><b>' + rnd + '회차 ' + title + '</b> · 미션 안내가 아직 등록되지 않았습니다.</div>';
+  return '<div class="mbox"><div class="mh"><b>' + rnd + '회차 ' + title + '</b>' + (mi.due ? '<span class="due">제출기한 ' + fmtD(mi.due) + '</span>' : '') + '</div>' +
+    (mi.topic ? '<div class="mt">' + esc(mi.topic) + '</div>' : '') + (mi.desc ? '<div class="md">' + esc(mi.desc) + '</div>' : '') + '</div>';
+}
+
+// 팀/서포터별 제출일 (기한과 비교해 기한 내/지연 표시)
+function subInfo(kind, rnd, target) {
+  const d = S.subDates && S.subDates[kind + '|' + rnd + '|' + target];
+  const mi = S.missions && S.missions[kind + '|' + rnd];
+  if (!d) return '<span class="badge g">제출일 미등록</span>';
+  let st = '';
+  if (mi && mi.due) { const n = dayDiff(d, mi.due); st = n <= 0 ? ' <span class="badge">기한 내</span>' : ' <span class="badge w">' + n + '일 지연</span>'; }
+  return '<span class="sub">제출일 <b>' + fmtD(d) + '</b></span>' + st;
+}
+
+const seenLinks = new Set();
+function linkBtn(kind, rnd, target) {
+  const k = kind + '|' + rnd + '|' + target;
+  const urls = String((S.links && S.links[k]) || '').split(/\s+/).filter(u => /^https?:\/\//i.test(u));
+  if (!urls.length) return '<span class="badge g">미션 링크 미등록</span>';
+  const multi = urls.length > 1;
+  return '<span class="lbtns">' + urls.map((u, i) => {
+    const id = k + '#' + i, seen = seenLinks.has(id), no = multi ? ' ' + (i + 1) : '';
+    return '<a class="lbtn' + (seen ? ' seen' : '') + '" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" data-lk="' + esc(id) + '" data-no="' + no + '">' + (seen ? '✓ 미션' + no + ' 다시 보기' : '미션 확인하기' + no + ' ↗') + '</a>';
+  }).join('') + '</span>';
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[data-lk]');
+  if (a) { seenLinks.add(a.dataset.lk); a.classList.add('seen'); a.textContent = '✓ 미션' + (a.dataset.no || '') + ' 다시 보기'; }
+});
+
+// ----- 드래그 막대 점수 입력 -----
+function barRows(items, vals, locked) {
+  return items.map((it, i) => {
+    const v = vals && vals[it.name] !== undefined && vals[it.name] !== '' ? vals[it.name] : '';
+    return '<div class="item"><div class="row"><div class="nm">' + esc(it.name) + ' <span class="sub">/ ' + it.max + '점</span></div><div class="val"></div></div>' +
+      '<div class="ds">' + esc(it.desc) + '</div>' +
+      '<div class="barrow">' + (locked ? '' : '<button type="button" class="step" data-d="-1" aria-label="1점 내리기">−</button>') +
+      '<div class="bar' + (locked ? ' locked' : '') + '" tabindex="' + (locked ? '-1' : '0') + '" role="slider" aria-label="' + esc(it.name) + '" aria-valuemin="0" aria-valuemax="' + it.max + '" data-i="' + i + '" data-max="' + it.max + '" data-v="' + v + '"><div class="fill"></div><div class="knob"></div></div>' +
+      (locked ? '' : '<button type="button" class="step" data-d="1" aria-label="1점 올리기">+</button>') + '</div></div>';
+  }).join('');
+}
+
+function paintBar(bar) {
+  const max = Number(bar.dataset.max), v = bar.dataset.v;
+  const p = v === '' ? 0 : Number(v) / max;
+  bar.querySelector('.fill').style.width = 'calc(11px + (100% - 22px) * ' + p + ')';
+  bar.querySelector('.knob').style.left = 'calc((100% - 22px) * ' + p + ')';
+  bar.classList.toggle('empty', v === '');
+  bar.setAttribute('aria-valuenow', v === '' ? 0 : v);
+  const val = bar.closest('.item').querySelector('.val');
+  val.textContent = v === '' ? '미입력' : v + '점';
+  val.classList.toggle('none', v === '');
+}
+
+function initBars(card, onChange) {
+  const upd = () => {
+    let t = 0, all = true;
+    card.querySelectorAll('.bar').forEach(b => { if (b.dataset.v === '') all = false; else t += Number(b.dataset.v); });
+    card.querySelector('.total').textContent = all ? '합계 ' + t + ' / 100' : '미입력 항목 있음';
+    if (onChange) onChange();
+  };
+  card.querySelectorAll('.bar').forEach(bar => {
+    paintBar(bar);
+    if (bar.classList.contains('locked')) return;
+    const max = Number(bar.dataset.max);
+    const cur = () => (bar.dataset.v === '' ? 0 : Number(bar.dataset.v));
+    const setV = v => { v = Math.max(0, Math.min(max, Math.round(v))); bar.dataset.v = String(v); paintBar(bar); upd(); };
+    const fromX = x => { const r = bar.getBoundingClientRect(); return (x - r.left - 11) / (r.width - 22) * max; };
+    let drag = false;
+    bar.onpointerdown = e => { drag = true; try { bar.setPointerCapture(e.pointerId); } catch (_) {} setV(fromX(e.clientX)); bar.focus({ preventScroll: true }); };
+    bar.onpointermove = e => { if (drag) setV(fromX(e.clientX)); };
+    bar.onpointerup = bar.onpointercancel = () => { drag = false; };
+    bar.onkeydown = e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setV(cur() + 1); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setV(cur() - 1); e.preventDefault(); }
+      else if (e.key === 'Home') { setV(0); e.preventDefault(); }
+      else if (e.key === 'End') { setV(max); e.preventDefault(); }
+    };
+    bar.parentElement.querySelectorAll('.step').forEach(b => { b.onclick = () => setV(cur() + Number(b.dataset.d)); });
+  });
+  upd();
+}
+
+function collect(card, items) {
+  const scores = {};
+  items.forEach((it, i) => {
+    const bar = card.querySelector('.bar[data-i="' + i + '"]');
+    if (bar.dataset.v === '') throw new Error('모든 항목에 점수를 주세요: ' + it.name);
+    scores[it.name] = Number(bar.dataset.v);
+  });
+  return scores;
+}
+
+function roundTabs(sel, prefix) {
+  const ex = S.config.excludedRounds;
+  return '<b>회차</b>' + Array.from({ length: S.config.rounds }, (_, i) => i + 1).map(r =>
+    '<div class="tab ' + (r === sel ? 'on' : '') + '" data-r="' + r + '">' + r + '회차' + (ex.indexOf(r) >= 0 ? ' <span style="opacity:.7;font-size:12px">참고</span>' : '') + (S.closed[prefix + r] ? ' 🔒' : '') + '</div>').join('');
+}
+
+function roundNote(r, locked) {
+  const ex = S.config.excludedRounds.indexOf(r) >= 0;
+  return (ex ? '<div class="sub warn" style="margin-top:6px">' + r + '회차는 최종 점수에 반영되지 않습니다(참고용).</div>' : '') +
+    (locked ? '<div class="sub" style="margin-top:6px">마감된 회차입니다. 수정할 수 없습니다.</div>' : '') +
+    '<div class="sub" style="margin-top:6px">「미션 확인하기」는 새 탭에서 열립니다. 확인한 뒤 이 화면으로 돌아와 막대를 좌우로 끌어 점수를 주세요.</div>';
+}
+
+// 팀 간 점수 차이 검사: 최고점 대비 pct% 이상 차이나면 위반 정보를 반환
+function gapInfo(totals, pct) {
+  if (totals.length < 2) return null;
+  let mx = totals[0], mn = totals[0];
+  totals.forEach(t => { if (t.total > mx.total) mx = t; if (t.total < mn.total) mn = t; });
+  if (mx.total <= 0 || (mx.total - mn.total) * 100 < pct * mx.total) return null;
+  const need = Math.floor(mx.total * (100 - pct) / 100) + 1;
+  return { mx: mx, mn: mn, need: need, below: totals.filter(t => t.total < need), gap: Math.round((mx.total - mn.total) / mx.total * 100) };
+}
+
+function renderTeam() {
+  const locked = S.closed[round];
+  const own = S.user.role === '멘토' && S.config.excludeOwnTeam;
+  const teams = S.teams.filter(t => !(own && S.user.team === t));
+  const pct = S.config.teamGapPct;
+  let h = '<div class="card"><div class="rtabs">' + roundTabs(round, '') + '</div>' + missionBox('팀', round) + roundNote(round, locked) +
+    '<div class="sub" style="margin-top:6px">팀 평가는 모든 팀을 입력한 뒤 「평가 완료」로 한 번에 제출합니다. 팀 간 총점 차이가 최고점 대비 ' + pct + '% 미만이어야 제출할 수 있습니다.</div></div>' +
+    '<div id="gapBanner" class="gapbanner" hidden></div>';
+  teams.forEach(t => {
+    const mine = S.mineTeam.find(x => String(x.round) === String(round) && x.team === t);
+    h += '<div class="card" data-team="' + esc(t) + '"><div class="chead"><h3>' + esc(t) + ' <span class="badge ' + (mine ? '' : 'w') + '">' + (mine ? '제출함' : '미제출') + '</span></h3>' + linkBtn('팀', round, t) + '</div><div class="subline">' + subInfo('팀', round, t) + '</div>' +
+      barRows(S.config.teamItems, mine && mine.scores, locked) +
+      '<div class="item"><textarea rows="2" placeholder="코멘트(선택)" ' + (locked ? 'disabled' : '') + '>' + esc(mine ? mine.comment : '') + '</textarea></div>' +
+      '<div class="foot"><span class="total"></span></div></div>';
+  });
+  if (!locked) h += '<div class="submitbar"><span id="subStat" class="sub"></span><button id="doneBtn" disabled>평가 완료</button></div>';
+  $('#body').innerHTML = h;
+  document.querySelectorAll('[data-r]').forEach(el => el.onclick = () => { round = Number(el.dataset.r); renderTeam(); });
+  const cards = Array.from(document.querySelectorAll('.card[data-team]'));
+  const check = () => {
+    const totals = [];
+    cards.forEach(c => {
+      const bars = Array.from(c.querySelectorAll('.bar'));
+      if (bars.every(b => b.dataset.v !== '')) totals.push({ team: c.dataset.team, total: bars.reduce((s, b) => s + Number(b.dataset.v), 0) });
+    });
+    const g = gapInfo(totals, pct);
+    const bn = document.getElementById('gapBanner');
+    if (g) {
+      bn.hidden = false;
+      bn.innerHTML = '⚠ <b>팀 간 점수 차이가 너무 큽니다.</b> ' + esc(g.mx.team) + ' ' + g.mx.total + '점 대비 ' + esc(g.mn.team) + ' ' + g.mn.total + '점 (차이 ' + g.gap + '%)<br>' +
+        '최고점이 ' + g.mx.total + '점이므로 <b>모든 팀의 총점을 ' + g.need + '점 이상</b>으로 배점해 주세요. (현재 미달: ' + g.below.map(t => esc(t.team) + ' ' + t.total + '점').join(', ') + ')<br>' +
+        '<span style="font-size:13px">점수를 조정하면 이 안내가 사라지고 「평가 완료」 버튼이 활성화됩니다.</span>';
+    } else bn.hidden = true;
+    const btn = document.getElementById('doneBtn');
+    if (btn) {
+      btn.disabled = !(totals.length === cards.length && !g);
+      document.getElementById('subStat').textContent = g ? '점수 차이를 조정해 주세요' : (totals.length < cards.length ? totals.length + ' / ' + cards.length + '팀 입력 완료' : '모든 팀 입력 완료');
+    }
+  };
+  cards.forEach(c => initBars(c, check));
+  check();
+  const done = document.getElementById('doneBtn');
+  if (done) done.onclick = async () => {
+    try {
+      const entries = cards.map(c => ({ team: c.dataset.team, scores: collect(c, S.config.teamItems), comment: c.querySelector('textarea').value }));
+      done.disabled = true;
+      const res = await api('submitTeamRound', { round, entries });
+      entries.forEach(en => {
+        S.mineTeam = S.mineTeam.filter(x => !(String(x.round) === String(round) && x.team === en.team));
+        S.mineTeam.push({ round, team: en.team, scores: en.scores, total: res.totals[en.team], comment: en.comment });
+      });
+      flash(round + '회차 팀 평가를 완료했습니다');
+      renderTeam();
+    } catch (e) { fail(e); check(); }
+  };
+}
+
+function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0; return h; }
+function renderInd() {
+  const locked = S.closed['I' + iround];
+  const own = S.user.role === '멘토' && S.config.excludeOwnTeam;
+  // 회차마다·평가자마다 서포터즈 표시 순서를 섞음 (같은 평가자·같은 회차는 새로고침해도 같은 순서)
+  const mems = S.members.filter(m => !(own && S.user.team === m.team)).map(m => [hashStr(S.user.id + '|' + iround + '|' + m.id), m]).sort((a, b) => a[0] - b[0] || (a[1].id < b[1].id ? -1 : 1)).map(x => x[1]);
+  const find = mid => S.mineInd.find(x => String(x.round) === String(iround) && x.member === mid);
+  const done = mems.filter(m => find(m.id)).length;
+  let h = '<div class="card"><div class="rtabs">' + roundTabs(iround, 'I') + '</div>' +
+    missionBox('개인', iround) + '<div class="sub" style="margin-top:6px">' + done + ' / ' + mems.length + '명 평가 완료</div>' + roundNote(iround, locked) + '</div>';
+  mems.forEach(m => {
+    const mine = find(m.id);
+    h += '<div class="card" data-m="' + m.id + '"><div class="chead"><h3>' + esc(m.name) + (m.team ? ' <span class="sub">' + esc(m.team) + '</span>' : '') + ' <span class="badge ' + (mine ? '' : 'w') + '">' + (mine ? '제출함' : '미제출') + '</span></h3>' + linkBtn('개인', iround, m.id) + '</div><div class="subline">' + subInfo('개인', iround, m.id) + '</div>' +
+      barRows(S.config.indItems, mine && mine.scores, locked) +
+      '<div class="item"><textarea rows="2" placeholder="코멘트(선택)" ' + (locked ? 'disabled' : '') + '>' + esc(mine ? mine.comment : '') + '</textarea></div>' +
+      '<div class="foot"><span class="total"></span>' + (locked ? '' : '<button>저장</button>') + '</div></div>';
+  });
+  $('#body').innerHTML = h;
+  document.querySelectorAll('[data-r]').forEach(el => el.onclick = () => { iround = Number(el.dataset.r); renderInd(); });
+  document.querySelectorAll('.card[data-m]').forEach(card => {
+    initBars(card);
+    const btn = card.querySelector('.foot button');
+    if (btn) btn.onclick = async () => {
+      try {
+        const scores = collect(card, S.config.indItems);
+        btn.disabled = true;
+        const cm = card.querySelector('textarea').value;
+        const res = await api('submitInd', { round: iround, member: card.dataset.m, scores, comment: cm });
+        S.mineInd = S.mineInd.filter(x => !(String(x.round) === String(iround) && x.member === card.dataset.m));
+        S.mineInd.push({ round: iround, member: card.dataset.m, scores, total: res.total, comment: cm });
+        flash(iround + '회차 저장 완료 (' + res.total + '점)');
+        renderInd();
+      } catch (e) { fail(e); btn.disabled = false; }
+    };
+  });
+}
+
+// ===== 관리자 =====
+function renderAdmin() {
+  const tabs = [['res', '결과'], ['prog', '진행현황'], ['att', '행사 참여'], ['links', '미션 정보'], ['roster', '명단'], ['close', '마감']];
+  $('#app').innerHTML = '<div class="tabs">' + tabs.map(t => '<div class="tab ' + (adminTab === t[0] ? 'on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</div>').join('') +
+    '<button class="ghost" id="rf">새로고침</button></div><div id="body"></div>';
+  document.querySelectorAll('.tab').forEach(el => el.onclick = () => { adminTab = el.dataset.t; renderAdmin(); });
+  $('#rf').onclick = async () => { await loadAdmin(); adminRoster.init = false; LK = null; LD = null; LM = null; renderAdmin(); flash('갱신했습니다'); };
+  ({ res: adminRes, prog: adminProg, att: adminAtt, links: adminLinks, roster: adminRoster, close: adminClose })[adminTab]();
+}
+
+function adminRes() {
+  const R = A.results, W = R.weights;
+  const rth = pre => R.teams[0].rounds.map(r => '<th' + (r.excluded ? ' class="dim"' : '') + '>' + pre + r.round + '회' + (r.excluded ? '(제외)' : '') + '</th>').join('');
+  const rtd = r => '<td' + (r.excluded ? ' class="dim"' : '') + '>' + (r.score === null ? '-' : r.score) + ' <span class="sub">(' + (r.used !== r.n ? r.used + '/' + r.n : r.n) + ')</span></td>';
+  let h = '<div class="card"><h3>팀 결과 <span class="sub">(행사 참여도 ' + W.teamAttendance + ' + 팀 미션 ' + W.teamEval + ')</span></h3><div class="scroll"><table><tr><th>팀</th>' + rth('미션 ') +
+    '<th>미션 평균(100)</th><th>행사 참여(' + W.teamAttendance + ')</th><th>팀 미션(' + W.teamEval + ')</th><th>총점</th><th>순위</th></tr>' +
+    R.teams.map(t => '<tr><td>' + esc(t.team) + ' <span class="sub">' + t.members + '명</span></td>' + t.rounds.map(rtd).join('') +
+      '<td>' + (t.avg === null ? '-' : t.avg) + '</td><td>' + t.attPts + '</td><td>' + t.evalPts + '</td><td><b>' + t.total + '</b></td><td>' + t.rank + '</td></tr>').join('') +
+    '</table></div><div class="sub">회차 점수 = 심사위원 점수에서 최고·최저 1명씩 제외한 평균(괄호: 반영 인원/평가 인원, 동점이어도 1명분만 차감). 행사 참여 = 팀원 행사 참여도 점수의 평균.</div></div>';
+  const ms = R.members.slice().sort((a, b) => a.rank - b.rank);
+  h += '<div class="card"><h3>개인 최종 점수 <span class="sub">(행사 참여도 ' + W.attendance + ' + 개인 미션 ' + W.individual + ')</span></h3><div class="scroll"><table><tr><th>순위</th><th class="l">이름</th><th class="l">팀</th><th class="l">익명번호</th><th>참여</th><th>행사(' + W.attendance + ')</th>' + rth('미션 ') +
+    '<th>미션 평균(100)</th><th>개인 미션(' + W.individual + ')</th><th>총점</th></tr>' +
+    ms.map(m => '<tr><td>' + m.rank + '</td><td class="l">' + esc(m.name) + '</td><td class="l">' + esc(m.team) + '</td><td class="l sub">' + esc(m.anon || '') + '</td><td>' + m.attended + '/' + m.events + '</td><td>' + m.attPts + '</td>' +
+      m.indRounds.map(rtd).join('') + '<td>' + (m.indAvg === null ? '-' : m.indAvg) + '</td><td>' + m.indPts + '</td><td><b>' + m.total + '</b></td></tr>').join('') +
+    '</table></div><div class="sub">미션 평균 = 회차별로 최고·최저 1명씩 제외한 심사위원 평균(8명 → 6명)의 1~4회차 평균. 총점은 소수 둘째 자리에서 반올림.</div>' +
+    '<div style="margin-top:10px"><button id="csv" class="ghost">CSV 내려받기</button></div></div>';
+  $('#body').innerHTML = h;
+  $('#csv').onclick = () => {
+    const rows = [['순위', '이름', '팀', '행사참여', '행사점수', '미션평균', '개인미션점수', '총점']].concat(ms.map(m => [m.rank, m.name, m.team, m.attended + '/' + m.events, m.attPts, m.indAvg === null ? '' : m.indAvg, m.indPts, m.total]));
+    const blob = new Blob(['﻿' + rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '서포터즈_평가결과.csv'; a.click();
+  };
+}
+
+let LK = null, LD = null, LM = null, LKR = 1;
+function adminLinks() {
+  if (!LK) { LK = Object.assign({}, A.links); LD = Object.assign({}, A.subDates); LM = JSON.parse(JSON.stringify(A.missions || {})); }
+  const R = S.config.rounds;
+  const inp = 'padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px;width:100%';
+  const dinp = 'padding:6px;border:1px solid var(--line);border-radius:8px;font-size:14px';
+  const mform = kind => {
+    const k = kind + '|' + LKR, v = LM[k] || {};
+    return '<div style="margin-top:12px"><b>' + kind + ' 미션</b>' +
+      '<input style="' + inp + ';margin-top:6px" data-mi="' + k + '" data-f="topic" placeholder="미션 주제 (예: 제주 농산물 소개 릴스)" value="' + esc(v.topic || '') + '">' +
+      '<textarea rows="3" style="margin-top:6px" data-mi="' + k + '" data-f="desc" placeholder="미션 내용·유의사항 (선택)">' + esc(v.desc || '') + '</textarea>' +
+      '<label class="sub" style="display:block;margin-top:6px">제출기한 <input type="date" style="' + dinp + '" data-mi="' + k + '" data-f="due" value="' + esc(v.due || '') + '"></label></div>';
+  };
+  let h = '<div class="card"><div class="rtabs"><b>회차</b>' + Array.from({ length: R }, (_, i) => i + 1).map(r => '<div class="tab ' + (r === LKR ? 'on' : '') + '" data-lr="' + r + '">' + r + '회차</div>').join('') + '</div>' +
+    '<div class="sub" style="margin-top:6px">미션 안내(주제·내용·제출기한)는 평가 화면 맨 위에, 링크와 제출일은 각 팀·서포터 카드에 표시됩니다. 제출일이 기한을 넘기면 「N일 지연」으로 자동 표시됩니다. 회차를 옮겨도 입력한 내용은 유지되며, 저장해야 반영됩니다.</div>' +
+    '<div class="foot"><span></span><button class="svl">저장</button></div></div>';
+  h += '<div class="card"><h3>' + LKR + '회차 미션 안내</h3>' + mform('팀') + mform('개인') + '</div>';
+  h += '<div class="card"><h3>' + LKR + '회차 팀 미션 링크·제출일</h3><div class="scroll"><table><tr><th class="l">팀</th><th class="l">링크</th><th class="l">제출일</th></tr>' +
+    S.teams.map(t => { const k = '팀|' + LKR + '|' + t; return '<tr><td class="l" style="width:70px">' + esc(t) + '</td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea></td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') + '</table></div></div>';
+  h += '<div class="card"><h3>' + LKR + '회차 개인 미션 링크·제출일</h3><div class="scroll"><table><tr><th class="l">서포터</th><th class="l">링크</th><th class="l">제출일</th></tr>' +
+    S.members.map(m => { const k = '개인|' + LKR + '|' + m.id; return '<tr><td class="l" style="width:130px">' + esc(m.name) + ' <span class="sub">' + esc(m.team) + ' · ' + esc(m.anon || '') + '</span></td><td><textarea rows="2" style="' + inp + ';min-width:200px;font:inherit" data-lk="' + esc(k) + '" placeholder="https://... (여러 개면 한 줄에 하나씩, 최대 5개)">' + esc(LK[k] || '') + '</textarea></td><td><input type="date" style="' + dinp + '" data-ld="' + esc(k) + '" value="' + esc(LD[k] || '') + '"></td></tr>'; }).join('') +
+    '</table></div><div class="foot"><span class="sub">제출일은 비워 두면 「제출일 미등록」으로 표시됩니다.</span><button class="svl">저장</button></div></div>';
+  $('#body').innerHTML = h;
+  document.querySelectorAll('[data-lr]').forEach(el => el.onclick = () => { LKR = Number(el.dataset.lr); adminLinks(); });
+  document.querySelectorAll('[data-lk]').forEach(el => { const f = () => { LK[el.dataset.lk] = el.value.trim(); }; el.oninput = f; el.onchange = f; });
+  document.querySelectorAll('[data-ld]').forEach(el => { const f = () => { LD[el.dataset.ld] = el.value; }; el.oninput = f; el.onchange = f; });
+  document.querySelectorAll('[data-mi]').forEach(el => { const f = () => { const k = el.dataset.mi; LM[k] = LM[k] || {}; LM[k][el.dataset.f] = el.value; }; el.oninput = f; el.onchange = f; });
+  document.querySelectorAll('.svl').forEach(b => b.onclick = async () => {
+    try {
+      await api('saveLinks', { links: LK, dates: LD });
+      await api('saveMissionInfo', { info: LM });
+      await loadAdmin(); const me = await api('me'); S.links = me.links; S.subDates = me.subDates; S.missions = me.missions;
+      LK = null; adminLinks(); flash('저장했습니다');
+    } catch (e) { fail(e); }
+  });
+}
+
+let RM = [], RE = [];
+function adminRoster() {
+  if (!adminRoster.init) { RM = A.members.map(x => Object.assign({}, x)); RE = A.evaluators.map(x => Object.assign({}, x)); adminRoster.init = true; }
+  const teams = Array.from(new Set(RM.map(m => m.team).filter(Boolean)));
+  const inp = 'padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px;width:100%';
+  let h = '<datalist id="tl">' + teams.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist>' +
+    '<div class="card"><h3>서포터즈 명단 <span class="sub">' + RM.length + '명</span></h3><div class="sub" style="margin-bottom:8px">소속 팀은 직접 입력하거나 기존 팀 이름을 고르세요. 팀 이름이 같아야 같은 팀으로 집계됩니다.</div><div class="scroll"><table><tr><th class="l">ID</th><th class="l">이름</th><th class="l">소속 팀</th><th></th></tr>' +
+    RM.map((m, i) => '<tr><td class="l sub">' + esc(m.id || '신규') + '</td><td><input style="' + inp + '" data-k="m" data-i="' + i + '" data-f="name" value="' + esc(m.name) + '"></td><td><input style="' + inp + '" list="tl" data-k="m" data-i="' + i + '" data-f="team" value="' + esc(m.team) + '"></td><td><button class="ghost" data-del="m" data-i="' + i + '">삭제</button></td></tr>').join('') +
+    '</table></div><div class="foot"><button class="ghost" id="addm">+ 서포터 추가</button><button id="savem">서포터즈 저장</button></div></div>';
+  h += '<div class="card"><h3>평가자 명단 <span class="sub">' + RE.length + '명</span></h3><div class="sub" style="margin-bottom:8px">이메일은 평가자가 로그인할 Google 계정입니다. 멘토는 담당 팀을 입력하면 해당 팀과 팀원은 평가·집계에서 제외됩니다.</div><div class="scroll"><table><tr><th class="l">이름</th><th class="l">역할</th><th class="l">담당 팀(멘토)</th><th class="l">Google 이메일</th><th></th></tr>' +
+    RE.map((e, i) => '<tr><td><input style="' + inp + ';min-width:110px" data-k="e" data-i="' + i + '" data-f="name" value="' + esc(e.name) + '"></td><td><select data-k="e" data-i="' + i + '" data-f="role">' +
+      ['관리자', '서포터즈 담당', '멘토'].map(r => '<option' + (e.role === r ? ' selected' : '') + '>' + r + '</option>').join('') + '</select></td><td><input style="' + inp + ';min-width:90px" list="tl" data-k="e" data-i="' + i + '" data-f="team" value="' + esc(e.team) + '"></td><td><input style="' + inp + ';min-width:200px" data-k="e" data-i="' + i + '" data-f="email" value="' + esc(e.email) + '" placeholder="name@gmail.com"></td><td><button class="ghost" data-del="e" data-i="' + i + '">삭제</button></td></tr>').join('') +
+    '</table></div><div class="foot"><button class="ghost" id="adde">+ 평가자 추가</button><button id="savee">평가자 저장</button></div></div>';
+  $('#body').innerHTML = h;
+  document.querySelectorAll('[data-k]').forEach(el => {
+    const upd = () => { (el.dataset.k === 'm' ? RM : RE)[Number(el.dataset.i)][el.dataset.f] = el.value; };
+    el.oninput = upd; el.onchange = upd;
+  });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const arr = b.dataset.del === 'm' ? RM : RE; const i = Number(b.dataset.i);
+    if (confirm((arr[i].name || '이 항목') + ' 을(를) 목록에서 삭제할까요? 저장해야 반영됩니다.')) { arr.splice(i, 1); adminRoster(); }
+  });
+  $('#addm').onclick = () => { RM.push({ id: '', name: '', team: teams[0] || '' }); adminRoster(); };
+  $('#adde').onclick = () => { RE.push({ id: '', name: '', role: '멘토', team: '', email: '' }); adminRoster(); };
+  $('#savem').onclick = async () => {
+    try {
+      await api('saveMembers', { members: RM });
+      await loadAdmin(); const me = await api('me'); S.members = me.members; S.teams = me.teams;
+      adminRoster.init = false; adminRoster(); flash('서포터즈 명단을 저장했습니다');
+    } catch (e) { fail(e); }
+  };
+  $('#savee').onclick = async () => {
+    try {
+      await api('saveEvaluators', { evaluators: RE });
+      await loadAdmin(); adminRoster.init = false; adminRoster(); flash('평가자 명단을 저장했습니다');
+    } catch (e) { fail(e); }
+  };
+}
+
+function adminProg() {
+  $('#body').innerHTML = '<div class="card"><h3>평가자별 제출 현황</h3><div class="scroll"><table><tr><th class="l">평가자</th><th class="l">역할</th><th>팀 평가</th><th>개인 평가</th></tr>' +
+    A.progress.map(p => {
+      const cls = (d, n) => d >= n ? 'badge' : 'badge w';
+      return '<tr><td class="l">' + esc(p.name) + '</td><td class="l">' + esc(p.role) + (p.team ? ' · ' + esc(p.team) : '') + '</td><td><span class="' + cls(p.teamDone, p.teamNeed) + '">' + p.teamDone + ' / ' + p.teamNeed + '</span></td><td><span class="' + cls(p.indDone, p.indNeed) + '">' + p.indDone + ' / ' + p.indNeed + '</span></td></tr>';
+    }).join('') + '</table></div></div>';
+}
+
+function adminAtt() {
+  const evs = A.events;
+  const cur = adminAtt.cur && evs.find(e => e.id === adminAtt.cur) ? adminAtt.cur : (evs.length ? evs[evs.length - 1].id : '');
+  adminAtt.cur = cur;
+  let h = '<div class="card"><h3>행사 추가</h3><div style="display:flex;gap:6px;flex-wrap:wrap"><input id="en" placeholder="행사명" style="padding:8px;border:1px solid var(--line);border-radius:8px;flex:1;min-width:140px"><input id="ed" type="date" style="padding:8px;border:1px solid var(--line);border-radius:8px"><button id="ea">추가</button></div></div>';
+  if (cur) {
+    const recs = {};
+    A.attendance.filter(a => a.event === cur).forEach(a => { recs[a.member] = a.status; });
+    h += '<div class="card"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><b>행사</b><select id="es">' + evs.map(e => '<option value="' + e.id + '"' + (e.id === cur ? ' selected' : '') + '>' + esc(e.name) + ' ' + esc(e.date) + '</option>').join('') + '</select>' +
+      '<button class="ghost" id="allp">전원 참여</button></div><table><tr><th class="l">이름</th><th class="l">팀</th><th>상태</th></tr>' +
+      S.members.map(m => '<tr><td class="l">' + esc(m.name) + '</td><td class="l">' + esc(m.team) + '</td><td><select data-m="' + m.id + '">' +
+        ['참여', '불참'].map(s => '<option' + ((recs[m.id] || '불참') === s ? ' selected' : '') + '>' + s + '</option>').join('') + '</select></td></tr>').join('') +
+      '</table><div class="sub" style="margin-top:6px">행사 참여도 = 참여 횟수 ÷ 총 행사 횟수 × 40점. 저장하지 않은 서포터는 불참으로 계산됩니다.</div><div style="margin-top:10px"><button id="sv">참여 저장</button></div></div>';
+  } else h += '<div class="card sub">등록된 행사가 없습니다.</div>';
+  $('#body').innerHTML = h;
+  $('#ea').onclick = async () => {
+    const name = $('#en').value.trim(); if (!name) return flash('행사명을 입력하세요', 'err');
+    try { await api('addEvent', { name, date: $('#ed').value }); await loadAdmin(); adminAtt.cur = null; adminAtt(); flash('행사를 추가했습니다'); } catch (e) { fail(e); }
+  };
+  if (cur) {
+    $('#es').onchange = e => { adminAtt.cur = e.target.value; adminAtt(); };
+    $('#allp').onclick = () => document.querySelectorAll('select[data-m]').forEach(s => s.value = '참여');
+    $('#sv').onclick = async () => {
+      const records = {};
+      document.querySelectorAll('select[data-m]').forEach(s => records[s.dataset.m] = s.value);
+      try { await api('setAttendance', { event: cur, records }); await loadAdmin(); adminAtt(); flash('행사 참여를 저장했습니다'); } catch (e) { fail(e); }
+    };
+  }
+}
+
+function adminClose() {
+  const R = S.config.rounds;
+  const rows = [];
+  for (let r = 1; r <= R; r++) rows.push([String(r), r + '회차 팀 평가' + (S.config.excludedRounds.indexOf(r) >= 0 ? ' (점수 제외)' : '')]);
+  for (let r = 1; r <= R; r++) rows.push(['I' + r, r + '회차 개인 평가' + (S.config.excludedRounds.indexOf(r) >= 0 ? ' (점수 제외)' : '')]);
+  $('#body').innerHTML = '<div class="card"><h3>마감 관리</h3><div class="sub">마감하면 평가자가 해당 회차를 더 이상 수정할 수 없습니다.</div>' +
+    rows.map(x => '<div class="item"><div class="row"><span class="nm">' + x[1] + ' <span class="badge ' + (A.closed[x[0]] ? 'g' : '') + '">' + (A.closed[x[0]] ? '마감' : '진행 중') + '</span></span><button class="ghost" data-k="' + x[0] + '">' + (A.closed[x[0]] ? '마감 해제' : '마감하기') + '</button></div></div>').join('') + '</div>';
+  document.querySelectorAll('button[data-k]').forEach(b => b.onclick = async () => {
+    const k = b.dataset.k;
+    try { await api('toggleClose', { key: k, value: !A.closed[k] }); await loadAdmin(); adminClose(); } catch (e) { fail(e); }
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
