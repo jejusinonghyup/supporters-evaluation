@@ -44,14 +44,42 @@ th{color:var(--mute);font-weight:600}
 #busy{display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100;background:#222;color:#fff;padding:9px 18px;border-radius:999px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .unsub{margin:8px 0;padding:9px 12px;border-radius:8px;background:#fff6e0;border:1px solid #f0d9a0;color:#7a5200;font-size:13.5px}
 .gov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:12px}
-.gbox{background:#fff;border-radius:14px;max-width:860px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.gbox{background:#fff;border-radius:14px;max-width:860px;width:100%;height:min(84vh,720px);display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .ghead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
-.gbody{overflow:auto;padding:4px 16px 18px;font-size:14px;line-height:1.55}
-.gbody h4{margin:16px 0 6px;font-size:15px}
-.gbody ul,.gbody ol{margin:6px 0;padding-left:20px}
-.gbody li{margin-bottom:4px}
-.gt td,.gt th{white-space:normal;text-align:left;vertical-align:top}
-.gt td:first-child,.gt th:first-child{white-space:nowrap}
+.gtabs{display:flex;gap:6px;padding:8px 16px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.gtab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 10px;font-size:14px;color:var(--mute);font-weight:600;white-space:nowrap;cursor:pointer}
+.gtab.on{color:var(--pri);border-bottom-color:var(--pri)}
+.gbody{flex:1;min-height:0;overflow:auto;padding:12px 16px 20px;font-size:14px;line-height:1.55}
+.gbody[hidden],.gp[hidden]{display:none}
+.gbody h4{margin:18px 0 8px;font-size:15px}
+.ghint{background:#f3f8f5;border:1px solid #cfe3d6;border-radius:10px;padding:9px 12px;margin-bottom:12px}
+.gi{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.gih{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:9px 12px;background:#f6f7f6;border-bottom:1px solid var(--line)}
+.gih b{font-size:16px}.gmax{background:var(--pri);color:#fff;border-radius:999px;padding:1px 9px;font-size:12.5px;font-weight:700}.gdesc{color:var(--mute);font-size:13px}
+.gl{display:grid;grid-template-columns:52px 58px 1fr;gap:8px;align-items:start;padding:8px 12px;border-left:5px solid;border-top:1px solid #eef0ee}
+.gl:first-of-type{border-top:none}
+.gb{font-weight:800;font-size:13.5px}.gr{font-weight:700;font-variant-numeric:tabular-nums}
+.g1{border-color:#1f8a4c;background:#eaf7ef}.g1 .gb{color:#1f8a4c}
+.g2{border-color:#2f7fd0;background:#eaf3fc}.g2 .gb{color:#2f7fd0}
+.g3{border-color:#d49a00;background:#fff6dc}.g3 .gb{color:#a87400}
+.g4{border-color:#d0503a;background:#fdecea}.g4 .gb{color:#c0432e}
+.gtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px}
+.gsm{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}
+.gtile{border:1px solid var(--line);border-radius:10px;padding:9px 10px;text-align:center;background:#fafbfa}
+.gtile.g1{border-color:#1f8a4c}.gtile.g2{border-color:#2f7fd0}.gtile.g3{border-color:#d49a00}.gtile.g4{border-color:#d0503a}.gtile.gz{border-color:#555;background:#eee}
+.gtt{font-size:12.5px;color:var(--mute)}.gbig{font-size:17px;font-weight:800;margin-top:2px}
+.gnote{background:#fff6e0;border:1px solid #f0d9a0;border-radius:10px;padding:9px 12px;color:#7a5200;font-size:13.5px}
+.gck{list-style:none;margin:0;padding:0}
+.gck li{position:relative;padding:6px 0 6px 26px;border-bottom:1px dashed var(--line)}
+.gck li:last-child{border-bottom:none}
+.gck li::before{content:'✓';position:absolute;left:4px;top:6px;color:#1f8a4c;font-weight:800}
+.gst{list-style:none;counter-reset:st;margin:0;padding:0}
+.gst li{counter-increment:st;position:relative;padding:7px 0 7px 34px}
+.gst li::before{content:counter(st);position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;background:var(--pri);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.g2c{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.gcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fafbfa}
+.gct{font-weight:800;margin-bottom:4px}.gct span{font-weight:500;color:var(--mute);font-size:13px}
+@media(max-width:480px){.gl{grid-template-columns:46px 52px 1fr;gap:6px;padding:8px 10px}.gtabs{gap:0;padding:6px 8px 0}.gtab{padding:8px 7px;font-size:13px}}
 .noscroll{overflow:hidden}
 .toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;max-width:min(92vw,560px);box-shadow:0 4px 16px rgba(0,0,0,.25);margin:0}
 .msg.err{background:#fdeceb;color:var(--bad)}
@@ -273,77 +301,74 @@ document.addEventListener('click', e => {
 });
 
 // ----- 점수 가이드라인 팝업 (팀/개인 평가 화면) -----
-const G_BANDS = [
-  ['탁월', '기대를 뚜렷하게 넘어선 수준. 모범 사례로 보여 줄 만함', '18~20', '27~30', '90점 이상'],
-  ['우수', '요구 수준을 충실히 충족하고 눈에 띄는 강점이 있음', '15~17', '23~26', '75~89점'],
-  ['보통', '기본 요건은 충족했으나 아쉬운 부분이 곳곳에 있음', '11~14', '17~22', '55~74점'],
-  ['미흡', '기본 요건 일부가 빠졌거나 보완이 크게 필요함', '0~10', '0~16', '54점 이하']
-];
+const G_LV = [['탁월', 'g1'], ['우수', 'g2'], ['보통', 'g3'], ['미흡', 'g4']];
+const G_RANGE = { 20: ['18~20', '15~17', '11~14', '0~10'], 30: ['27~30', '23~26', '17~22', '0~16'] };
 const G_RUB = {
   team: [
-    ['성실성', 20, '마감 준수, 과제 충실도', ['주제·형식·분량 요구를 빠짐없이 충족하고 공들인 흔적이 뚜렷함 (지연이 있으면 아래 상한 적용)', '요구 충족, 사소한 누락 1~2개', '요구사항 일부 누락, 기본 구성은 갖춤', '요구사항 다수 미충족']],
-    ['창의성', 20, '아이디어, 내용 신선도', ['주제를 새로운 시각으로 풀어 다른 콘텐츠와 확실히 구분됨, 농협·지역 특색을 살린 차별점', '참신한 요소가 분명하고 주제와 잘 맞음', '무난하나 흔히 보는 구성, 차별점이 약함', '기존 콘텐츠를 거의 그대로 따랐거나 주제와 동떨어짐']],
-    ['콘텐츠 완성도', 30, '디자인, 구성, 전달력', ['편집·자막·음향·구성이 매끄럽고 메시지가 첫 시청에 명확히 전달됨, 바로 게시 가능', '전체적으로 안정적, 사소한 보완만 하면 게시 가능', '핵심 메시지는 전달되나 구성·편집·가독성이 아쉬움, 수정 후 게시 가능', '구성이 산만하고 화질·자막·소리 문제로 메시지 전달이 어려움']],
-    ['홍보 기대효과', 30, '조회수·좋아요 등 홍보 확산 효과', ['타깃에게 호소할 요소가 뚜렷하고 공유·저장을 부르는 장치(후킹, 문구, 해시태그)를 갖춤, 큰 반응이 기대됨', '홍보 목적에 부합하고 일정 수준의 반응이 기대됨', '홍보 메시지가 모호하고 반응은 보통 수준으로 예상됨', '홍보 목적이 불분명하고 노출·확산 요소가 거의 없음']]
+    ['성실성', 20, '마감 준수, 과제 충실도', ['주제·형식·분량 요구를 빠짐없이 충족, 공들인 흔적이 뚜렷함 (지연 시 상한 적용)', '요구 충족, 사소한 누락 1~2개', '요구사항 일부 누락, 기본 구성은 갖춤', '요구사항 다수 미충족']],
+    ['창의성', 20, '아이디어, 내용 신선도', ['새로운 시각으로 풀어 확실히 차별됨, 농협·지역 특색을 살림', '참신한 요소가 분명하고 주제와 잘 맞음', '무난하나 흔히 보는 구성, 차별점 약함', '기존 콘텐츠를 거의 그대로 따랐거나 주제와 동떨어짐']],
+    ['콘텐츠 완성도', 30, '디자인, 구성, 전달력', ['편집·자막·음향·구성이 매끄럽고 메시지가 첫 시청에 전달됨, 바로 게시 가능', '전체적으로 안정적, 사소한 보완이면 게시 가능', '메시지는 전달되나 구성·편집·가독성이 아쉬움', '구성이 산만하고 화질·자막·소리 문제로 전달이 어려움']],
+    ['홍보 기대효과', 30, '조회수·좋아요 등 홍보 확산 효과', ['타깃에게 호소하고 공유·저장을 부르는 장치(후킹, 문구, 해시태그)를 갖춤, 큰 반응 기대', '홍보 목적에 부합, 일정 수준의 반응 기대', '홍보 메시지가 모호, 반응은 보통 수준 예상', '홍보 목적이 불분명, 확산 요소가 거의 없음']]
   ],
   ind: [
-    ['성실성', 20, '마감 준수, 과제 충실도', ['요구사항을 빠짐없이 충족하고 정성이 느껴짐 (지연이 있으면 아래 상한 적용)', '요구 충족, 사소한 누락 1~2개', '요구사항 일부 누락', '요구사항 다수 미충족']],
+    ['성실성', 20, '마감 준수, 과제 충실도', ['요구사항을 빠짐없이 충족, 정성이 느껴짐 (지연 시 상한 적용)', '요구 충족, 사소한 누락 1~2개', '요구사항 일부 누락', '요구사항 다수 미충족']],
     ['창의성', 20, '아이디어, 내용 신선도', ['본인만의 시각과 경험이 담겨 개성이 뚜렷하고 신선함', '참신한 요소가 분명하고 주제와 잘 맞음', '무난하나 평범함, 개성이 약함', '주제 이해가 부족하거나 기존 콘텐츠를 그대로 따라 함']],
-    ['콘텐츠 완성도', 30, '디자인, 구성, 전달력', ['구성·디자인·문장(또는 편집)이 매끄럽고 전달력이 뛰어나 수정 없이 게시 가능', '전체적으로 안정적이며 사소한 보완만 필요', '메시지는 전달되나 구성·편집·가독성이 아쉬움', '구성이 산만해 메시지를 파악하기 어려움']],
-    ['홍보 기대효과', 30, '조회수·좋아요 등 홍보 확산 효과', ['지역·농협 소식을 관심을 끄는 방식으로 전달하고 공유를 부르는 장치(후킹, 문구, 해시태그)를 갖춤', '홍보 목적에 부합하고 일정 수준의 반응이 기대됨', '홍보 메시지가 모호하고 반응은 보통 수준으로 예상됨', '홍보 목적이 불분명하고 확산 요소가 거의 없음']]
+    ['콘텐츠 완성도', 30, '디자인, 구성, 전달력', ['구성·디자인·문장(또는 편집)이 매끄럽고 전달력이 뛰어나 수정 없이 게시 가능', '전체적으로 안정적, 사소한 보완만 필요', '메시지는 전달되나 구성·편집·가독성이 아쉬움', '구성이 산만해 메시지를 파악하기 어려움']],
+    ['홍보 기대효과', 30, '조회수·좋아요 등 홍보 확산 효과', ['지역·농협 소식을 관심을 끄는 방식으로 전달, 공유를 부르는 장치(후킹, 문구, 해시태그)를 갖춤', '홍보 목적에 부합, 일정 수준의 반응 기대', '홍보 메시지가 모호, 반응은 보통 수준 예상', '홍보 목적이 불분명, 확산 요소가 거의 없음']]
   ]
 };
-function gBands() {
-  return '<h4>점수 단계</h4><div class="scroll"><table class="gt"><tr><th>단계</th><th>의미</th><th>성실성·창의성(20)</th><th>콘텐츠 완성도·홍보(30)</th><th>총점(대략)</th></tr>' +
-    G_BANDS.map(b => '<tr><td><b>' + b[0] + '</b></td><td>' + b[1] + '</td><td>' + b[2] + '</td><td>' + b[3] + '</td><td>' + b[4] + '</td></tr>').join('') +
-    '</table></div><div class="sub">항목마다 단계가 섞이면 총점이 구간 사이에 걸치므로 총점 환산은 참고용입니다.</div>';
-}
 function gRubric(kind) {
-  return '<h4>항목별 기준</h4><div class="scroll"><table class="gt" style="min-width:680px"><tr><th>항목</th><th>탁월</th><th>우수</th><th>보통</th><th>미흡</th></tr>' +
-    G_RUB[kind].map(r => {
-      const rg = r[1] === 20 ? ['18~20', '15~17', '11~14', '0~10'] : ['27~30', '23~26', '17~22', '0~16'];
-      return '<tr><td><b>' + r[0] + '</b> (' + r[1] + ')<div class="sub">' + r[2] + '</div></td>' + r[3].map((t, i) => '<td><b>' + rg[i] + '</b><br>' + t + '</td>').join('') + '</tr>';
-    }).join('') + '</table></div>';
+  return '<div class="ghint">항목마다 <b>단계를 먼저 고른 뒤</b>, 그 단계의 점수 구간 안에서 점수를 정하세요.</div>' +
+    G_RUB[kind].map(r => '<div class="gi"><div class="gih"><b>' + r[0] + '</b><span class="gmax">' + r[1] + '점</span><span class="gdesc">' + r[2] + '</span></div>' +
+      G_LV.map((lv, i) => '<div class="gl ' + lv[1] + '"><span class="gb">' + lv[0] + '</span><span class="gr">' + G_RANGE[r[1]][i] + '</span><span class="gtx">' + r[3][i] + '</span></div>').join('') + '</div>').join('');
 }
 function gDelay() {
-  return '<h4>제출 지연 · 미제출 처리</h4><div>카드의 제출일 배지(기한 내 / N일 지연)를 보고 성실성 점수의 상한을 정합니다. 지연은 성실성에서만 반영하고, 다른 항목은 결과물의 질로만 평가합니다.</div>' +
-    '<div class="scroll"><table class="gt"><tr><th>제출 상황</th><th>점수</th></tr><tr><td>기한 내 제출</td><td>성실성 제한 없음 (탁월 가능)</td></tr><tr><td>1~2일 지연</td><td>성실성 <b>18점</b> 상한</td></tr><tr><td>3~5일 지연</td><td>성실성 <b>15점</b> 상한</td></tr><tr><td>6일 이상 지연</td><td>성실성 <b>12점</b> 상한</td></tr><tr><td>미제출 (제출 자료 없음)</td><td>전 항목 <b>0점</b></td></tr></table></div>';
+  const tile = (top, big, cls) => '<div class="gtile ' + (cls || '') + '"><div class="gtt">' + top + '</div><div class="gbig">' + big + '</div></div>';
+  return '<div class="ghint">제출일 배지(<b>기한 내 / N일 지연</b>)를 보고 <b>성실성 점수의 상한</b>을 정하세요. 지연은 성실성에서만 반영하고, 다른 항목은 결과물의 질로만 평가합니다.</div>' +
+    '<div class="gtiles">' + tile('기한 내 제출', '제한 없음', 'g1') + tile('1~2일 지연', '18점 까지', 'g2') + tile('3~5일 지연', '15점 까지', 'g3') + tile('6일 이상 지연', '12점 까지', 'g4') + tile('미제출', '전 항목 0점', 'gz') + '</div>' +
+    '<div class="gnote">미제출은 카드에 노란 안내가 뜨며, 「미제출 처리」 버튼으로 한 번에 0점을 줄 수 있습니다.</div>';
 }
+function gChecks(list) { return '<ul class="gck">' + list.map(t => '<li>' + t + '</li>').join('') + '</ul>'; }
 function gFair() {
-  return '<h4>공정 평가 원칙</h4><ul><li>제출물에 드러난 결과만 평가합니다. 평소 활동 태도, 친분, 담당 여부는 반영하지 않습니다.</li>' +
-    '<li>다른 평가자와 점수를 상의하지 않습니다. 회차마다 최고점과 최저점을 1명씩 제외해 평균을 내므로, 각자 기준대로 독립적으로 평가하는 것이 가장 공정합니다.</li>' +
-    '<li>같은 감점 사유를 여러 항목에 중복 적용하지 않습니다. 제출 지연은 성실성에서만 반영합니다.</li>' +
-    '<li>모두에게 비슷한 점수를 주지 말고 단계 구간을 폭넓게 사용해 차이를 드러냅니다.</li>' +
-    '<li>링크가 여러 개이면 모두 열어 전체 제출물을 기준으로 평가합니다.</li></ul>';
+  return '<h4>공정 평가 원칙</h4>' + gChecks([
+    '제출물에 드러난 <b>결과만</b> 평가합니다. 평소 태도·친분·담당 여부는 반영하지 않습니다.',
+    '다른 평가자와 <b>점수를 상의하지 않습니다.</b> 회차마다 최고·최저점을 1명씩 제외하므로 각자 기준대로 평가합니다.',
+    '같은 감점 사유를 <b>여러 항목에 중복</b> 적용하지 않습니다.',
+    '모두에게 비슷한 점수를 주지 말고 <b>단계 구간을 폭넓게</b> 씁니다.',
+    '링크가 여러 개면 <b>모두 열어</b> 전체 제출물을 기준으로 평가합니다.']);
 }
-function gTeam() {
+function gTeamRule() {
   const pct = S.config.teamGapPct;
   const mx = [100, 95, 90, 85, 80, 75, 70];
-  const mn = mx.map(m => Math.floor(m * (100 - pct) / 100) + 1);
-  return gBands() + gRubric('team') + gDelay() +
-    '<h4>' + pct + '% 룰 점수 부여 요령</h4><div>최저 팀 총점은 최고 팀 총점의 ' + (100 - pct) + '%를 넘어야 제출됩니다. 최고 팀 총점별로 다른 팀이 받아야 하는 최소 총점은 다음과 같습니다.</div>' +
-    '<div class="scroll"><table class="gt"><tr><th>최고 팀 총점</th>' + mx.map(m => '<td>' + m + '</td>').join('') + '</tr><tr><th>다른 팀 최소 총점</th>' + mn.map(m => '<td><b>' + m + '</b></td>').join('') + '</tr></table></div>' +
-    '<ol><li>가장 완성도 높은 팀을 먼저 정해 항목별 점수를 매기고 총점을 확정합니다.</li>' +
-    '<li>위 표에서 그 총점의 최소 총점(다른 팀의 하한선)을 확인합니다.</li>' +
-    '<li>나머지 팀은 최고 팀과 비교해 항목별로 한 단계 차이(20점 항목 약 3점, 30점 항목 약 4점)를 기준으로 조정합니다.</li>' +
-    '<li>차이를 두고 싶은 한두 항목에 격차를 집중합니다. 모든 항목에서 크게 벌리면 하한선에 걸리기 쉽습니다.</li>' +
-    '<li>마지막으로 3개 팀 총점이 의도한 순서와 단계에 맞는지 확인합니다.</li></ol>' +
-    '<ul><li>최고 팀 점수를 만점에 가깝게 주면 하한선도 함께 올라갑니다. 격차를 크게 두고 싶다면 최고 팀을 우수 상단(80점대 중후반)에서 시작하세요.</li>' +
-    '<li>빨간 배너가 뜨면 안내된 "N점 이상"을 기준으로, 가장 낮은 팀의 항목 중 단계 경계선에 걸린 것부터 다시 살핍니다. 근거 없이 점수를 올리지 않습니다.</li></ul>' +
-    '<h4>홍보 기대효과 판단 근거</h4><ul><li><b>업로드한 회차(1~2회차)</b>: 조회수, 좋아요, 댓글, 저장·공유 수와 반응의 질을 봅니다. 숫자의 절대값만 보지 말고 계정 규모와 업로드 시점 차이를 고려합니다.</li>' +
-    '<li><b>업로드하지 못한 회차(3~4회차)</b>: 업로드했을 때 기대되는 효과를 봅니다. 타깃 적합성, 초반 후킹, 문구·해시태그, 공유·저장 유도 요소, 릴스 형식 적합성을 확인합니다. 실제 반응 자료가 없으므로 탁월(27~30점)은 확산 요소를 모두 갖춘 경우에만 줍니다.</li></ul>' +
-    gFair();
+  return '<div class="ghint">최저 팀 총점은 최고 팀 총점의 <b>' + (100 - pct) + '%를 넘어야</b> 제출됩니다.</div>' +
+    '<div class="gtiles gsm">' + mx.map(m => '<div class="gtile"><div class="gtt">최고 ' + m + '점이면</div><div class="gbig">' + (Math.floor(m * (100 - pct) / 100) + 1) + '점 이상</div></div>').join('') + '</div>' +
+    '<h4>점수 주는 순서</h4><ol class="gst">' +
+    '<li>가장 완성도 높은 팀을 먼저 정해 항목별 점수를 매기고 <b>총점을 확정</b>합니다.</li>' +
+    '<li>위 표에서 그 총점의 <b>하한선</b>을 확인합니다.</li>' +
+    '<li>나머지 팀은 최고 팀과 비교해 항목별로 <b>한 단계 차이</b>(20점 항목 약 3점, 30점 항목 약 4점)로 조정합니다.</li>' +
+    '<li>차이를 두고 싶은 <b>한두 항목</b>에 격차를 집중합니다. 모든 항목에서 크게 벌리면 하한선에 걸립니다.</li>' +
+    '<li>3개 팀 총점이 의도한 순서와 단계에 맞는지 마지막으로 확인합니다.</li></ol>' +
+    '<h4>팁</h4>' + gChecks([
+      '최고 팀을 <b>만점에 가깝게</b> 주면 하한선도 함께 올라갑니다. 격차를 크게 두려면 최고 팀을 우수 상단(80점대 중후반)에서 시작하세요.',
+      '빨간 배너가 뜨면 안내된 <b>"N점 이상"</b> 기준으로, 가장 낮은 팀의 <b>단계 경계선</b>에 걸린 항목부터 다시 살핍니다. 근거 없이 올리지 않습니다.']);
 }
-function gInd() {
-  return gBands() + gRubric('ind') +
-    gDelay() +
-    '<h4>익명 심사 유의사항</h4><ul><li>서포터즈 번호는 사람마다 고정이며 이름 순서와 무관합니다. 누구인지 추측하지 않습니다.</li>' +
-    '<li>제출물에 계정명, 얼굴, 자막으로 본인이 드러나더라도 점수에 영향을 주지 않습니다.</li>' +
-    '<li>코멘트에는 이름이나 계정명을 쓰지 않습니다.</li>' +
-    '<li>카드 순서는 회차마다, 평가자마다 다르게 섞여 나옵니다. 앞쪽에 나왔다는 이유로 높게 주지 않습니다.</li></ul>' +
-    '<h4>점수 분포 참고</h4><div>서포터즈 16명 모두에게 비슷한 점수(예: 전원 80점대 초반)를 주면 순위 변별이 사라집니다. 단계 구간을 폭넓게 써서 탁월은 소수, 우수는 다수, 보통과 미흡은 해당하는 만큼만 부여하는 것이 일반적입니다. 이 분포는 참고일 뿐 강제 배분이 아니며, 기준에 맞으면 해당 단계를 몇 명이든 그대로 부여합니다.</div>' +
-    gFair();
+function gTeamNote() {
+  return '<h4>홍보 기대효과 판단 근거</h4><div class="g2c">' +
+    '<div class="gcard"><div class="gct">업로드한 회차 <span>(1~2회차)</span></div>조회수, 좋아요, 댓글, 저장·공유 수와 반응의 질을 봅니다. 숫자의 절대값만 보지 말고 계정 규모와 업로드 시점 차이를 고려합니다.</div>' +
+    '<div class="gcard"><div class="gct">업로드하지 못한 회차 <span>(3~4회차)</span></div>업로드했을 때 <b>기대되는 효과</b>를 봅니다. 타깃 적합성, 초반 후킹, 문구·해시태그, 공유·저장 유도, 릴스 형식 적합성. 실제 반응 자료가 없으므로 탁월(27~30점)은 확산 요소를 모두 갖춘 경우에만 줍니다.</div></div>' + gFair();
 }
+function gIndNote() {
+  return '<h4>익명 심사</h4>' + gChecks([
+    '서포터즈 번호는 사람마다 고정이며 이름 순서와 무관합니다. <b>누구인지 추측하지 않습니다.</b>',
+    '제출물에 계정명·얼굴·자막으로 본인이 드러나도 점수에 영향을 주지 않습니다.',
+    '코멘트에는 <b>이름이나 계정명을 쓰지 않습니다.</b>',
+    '카드 순서는 회차마다·평가자마다 다르게 섞여 나옵니다. 앞에 나왔다고 높게 주지 않습니다.']) +
+    '<h4>점수 분포 참고</h4><div class="gnote">16명 모두에게 비슷한 점수(예: 전원 80점대 초반)를 주면 순위 변별이 사라집니다. 단계 구간을 폭넓게 써서 탁월은 소수, 우수는 다수, 보통·미흡은 해당하는 만큼만 부여하는 것이 일반적입니다. 강제 배분은 아니며, 기준에 맞으면 해당 단계를 몇 명이든 그대로 부여합니다.</div>' + gFair();
+}
+const G_TABS = {
+  team: [['항목별 기준', () => gRubric('team')], ['20% 룰', gTeamRule], ['제출 지연·미제출', gDelay], ['평가 유의사항', gTeamNote]],
+  ind: [['항목별 기준', () => gRubric('ind')], ['제출 지연·미제출', gDelay], ['평가 유의사항', gIndNote]]
+};
 // 제출 자료(링크·제출일)가 모두 등록되지 않은 대상 = 미제출 안내 대상
 function isUnsub(kind, rnd, target) {
   const k = kind + '|' + rnd + '|' + target;
@@ -366,9 +391,20 @@ function guideBtn(kind) {
 }
 function openGuide(kind) {
   closeGuide();
+  const tabs = G_TABS[kind];
   const ov = document.createElement('div'); ov.id = 'gov'; ov.className = 'gov';
-  ov.innerHTML = '<div class="gbox" role="dialog" aria-modal="true" aria-label="점수 가이드라인"><div class="ghead"><b>' + (kind === 'team' ? '팀' : '개인') + ' 미션 점수 가이드라인</b><button class="ghost gx">✕ 닫기</button></div><div class="gbody">' + (kind === 'team' ? gTeam() : gInd()) + '</div></div>';
-  ov.addEventListener('click', e => { if (e.target === ov) closeGuide(); });
+  ov.innerHTML = '<div class="gbox" role="dialog" aria-modal="true" aria-label="점수 가이드라인"><div class="ghead"><b>📋 ' + (kind === 'team' ? '팀' : '개인') + ' 미션 점수 가이드라인</b><button class="ghost gx">✕ 닫기</button></div>' +
+    '<div class="gtabs">' + tabs.map((t, i) => '<button type="button" class="gtab' + (i === 0 ? ' on' : '') + '" data-gt="' + i + '">' + t[0] + '</button>').join('') + '</div>' +
+    '<div class="gbody">' + tabs.map((t, i) => '<div class="gp" data-gp="' + i + '"' + (i === 0 ? '' : ' hidden') + '>' + t[1]() + '</div>').join('') + '</div></div>';
+  ov.addEventListener('click', e => {
+    if (e.target === ov) return closeGuide();
+    const tb = e.target.closest && e.target.closest('[data-gt]');
+    if (tb) {
+      ov.querySelectorAll('.gtab').forEach(x => x.classList.toggle('on', x === tb));
+      ov.querySelectorAll('.gp').forEach(x => { x.hidden = x.dataset.gp !== tb.dataset.gt; });
+      ov.querySelector('.gbody').scrollTop = 0;
+    }
+  });
   ov.querySelector('.gx').onclick = closeGuide;
   document.body.appendChild(ov); document.body.classList.add('noscroll');
   ov.querySelector('.gx').focus();
