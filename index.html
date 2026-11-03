@@ -133,6 +133,7 @@ const API = 'https://script.google.com/macros/s/AKfycbx3GnnntRBaJn1zEuScZpXbhdle
 const CLIENT_ID = '661715117541-4d5cune1tgjoo3s5app9gr1sr5ltcic1.apps.googleusercontent.com';
 
 let ID_TOKEN = sessionStorage.getItem('sup_idtoken') || '';
+let SESSION = sessionStorage.getItem('sup_session') || ''; // 접속 코드 로그인 세션
 let S = null, A = null, tab = '', round = 1, iround = 1, adminTab = 'res';
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -157,7 +158,7 @@ async function api(action, data = {}) {
   busy(true);
   let j;
   try {
-    const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, idToken: ID_TOKEN }, data)) });
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ action, idToken: ID_TOKEN, session: SESSION }, data)) });
     j = await r.json();
   } finally { busy(false); }
   if (!j.ok) {
@@ -181,12 +182,36 @@ function renderGBtn(id) {
 function showLogin(msg) {
   $('#who').textContent = '';
   $('#app').innerHTML = (msg ? '<div class="msg err">' + esc(msg) + '</div>' : '') +
-    '<div class="center"><p>서포터즈 평가는 Google 계정으로 로그인합니다.<br>평가자로 등록된 계정만 이용할 수 있습니다.</p><div id="gbtn" style="display:inline-block"></div></div>';
-  renderGBtn('gbtn');
+    '<div class="center"><p>서포터즈 평가는 Google 계정으로 로그인합니다.<br>평가자로 등록된 계정만 이용할 수 있습니다.</p><div id="gbtn" style="display:inline-block"></div></div>' +
+    '<div class="card" style="max-width:380px;margin:18px auto"><h3>접속 코드로 로그인</h3><div class="sub">Google 계정이 없는 평가자는 담당자에게 받은 이름과 접속 코드로 로그인합니다.</div>' + codeFormHtml('lc', '') + '</div>';
+  renderGBtn('gbtn'); bindCodeForm('lc');
 }
+// 접속 코드 로그인 (구글 계정이 없는 평가자용)
+function codeFormHtml(p, name) {
+  const st = 'padding:9px;border:1px solid var(--line);border-radius:8px;font-size:15px;width:100%;box-sizing:border-box;margin-top:8px';
+  return '<input id="' + p + 'n" placeholder="이름" autocomplete="off" value="' + esc(name) + '" style="' + st + '">' +
+    '<input id="' + p + 'c" placeholder="접속 코드 (예: ABCD-EFGH)" autocomplete="off" autocapitalize="characters" style="' + st + ';text-transform:uppercase;letter-spacing:1px">' +
+    '<button id="' + p + 'b" style="width:100%;margin-top:8px">접속 코드로 로그인</button>';
+}
+function bindCodeForm(p) {
+  const go = () => codeLogin($('#' + p + 'n').value, $('#' + p + 'c').value);
+  $('#' + p + 'b').onclick = go;
+  ['n', 'c'].forEach(k => { $('#' + p + k).onkeydown = e => { if (e.key === 'Enter') go(); }; });
+}
+async function codeLogin(name, code) {
+  try {
+    const j = await api('codeLogin', { name: name, code: code });
+    SESSION = j.session; sessionStorage.setItem('sup_session', SESSION);
+    ID_TOKEN = ''; sessionStorage.removeItem('sup_idtoken');
+    if (S) { const d = document.getElementById('relogin'); if (d) d.remove(); flash('다시 로그인되었습니다. 저장 버튼을 다시 눌러 주세요.'); }
+    else boot();
+  } catch (e) { flash(e.message || String(e), 'err'); }
+}
+function clearLogin() { sessionStorage.removeItem('sup_idtoken'); sessionStorage.removeItem('sup_session'); ID_TOKEN = ''; SESSION = ''; }
 function onCred(resp) {
   ID_TOKEN = resp.credential;
   sessionStorage.setItem('sup_idtoken', ID_TOKEN);
+  SESSION = ''; sessionStorage.removeItem('sup_session');
   if (S) { const d = document.getElementById('relogin'); if (d) d.remove(); flash('다시 로그인되었습니다. 저장 버튼을 다시 눌러 주세요.'); }
   else boot();
 }
@@ -194,13 +219,18 @@ function fail(e) {
   if (e.code === 'EXPIRED' || e.code === 'LOGIN_REQUIRED') {
     if (!document.getElementById('relogin')) {
       const d = document.createElement('div'); d.id = 'relogin'; d.className = 'msg err';
-      d.innerHTML = '로그인이 만료되었습니다. 다시 로그인한 뒤 저장을 눌러 주세요.<div id="gbtn2" style="margin-top:6px"></div>';
-      $('#app').prepend(d); renderGBtn('gbtn2');
+      if (SESSION) {
+        d.innerHTML = esc(e.message || '로그인이 만료되었습니다.') + ' 접속 코드로 다시 로그인한 뒤 저장을 눌러 주세요.' + codeFormHtml('rc', S ? S.user.name : '');
+        $('#app').prepend(d); bindCodeForm('rc');
+      } else {
+        d.innerHTML = '로그인이 만료되었습니다. 다시 로그인한 뒤 저장을 눌러 주세요.<div id="gbtn2" style="margin-top:6px"></div>';
+        $('#app').prepend(d); renderGBtn('gbtn2');
+      }
     }
   } else flash(e.message || String(e), 'err');
 }
 function logout() {
-  sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
+  clearLogin();
   if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
   location.reload();
 }
@@ -213,10 +243,10 @@ function flash(text, type = 'ok') {
 }
 
 async function boot() {
-  if (!ID_TOKEN) return showLogin();
+  if (!ID_TOKEN && !SESSION) return showLogin();
   try {
     S = await api('me');
-    $('#who').innerHTML = esc(S.user.name + (S.user.team ? ' · ' + S.user.team : '') + ' (' + S.user.role + ')') + ' · <a href="#" id="lo" style="color:#fff">로그아웃</a>';
+    $('#who').innerHTML = esc(S.user.name + (S.user.team ? ' · ' + S.user.team : '') + ' (' + S.user.role + ')') + (S.user.codeExpires ? ' · 접속 코드 ~' + esc(S.user.codeExpires.slice(5)) : '') + ' · <a href="#" id="lo" style="color:#fff">로그아웃</a>';
     $('#lo').onclick = e => { e.preventDefault(); logout(); };
     if (S.user.isAdmin) await loadAdmin();
     mode = S.user.canJudge ? 'judge' : 'admin'; tab = 'team';
@@ -225,11 +255,11 @@ async function boot() {
     S = null;
     if (e.code === 'NOT_REGISTERED') {
       if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
-      sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
+      clearLogin();
       return showLogin(e.message);
     }
-    sessionStorage.removeItem('sup_idtoken'); ID_TOKEN = '';
-    showLogin(e.code === 'EXPIRED' || e.code === 'LOGIN_REQUIRED' ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : e.message);
+    clearLogin();
+    showLogin(e.code === 'LOGIN_REQUIRED' ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : e.message);
   }
 }
 
@@ -601,7 +631,7 @@ function renderAdmin() {
   $('#app').innerHTML = modeBar() + '<div class="tabs">' + tabs.map(t => '<div class="tab ' + (adminTab === t[0] ? 'on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</div>').join('') +
     '<button class="ghost" id="rf">새로고침</button></div><div id="body"></div>';
   bindMode();
-  document.querySelectorAll('.tab').forEach(el => el.onclick = () => { adminTab = el.dataset.t; renderAdmin(); });
+  document.querySelectorAll('.tab').forEach(el => el.onclick = () => { adminTab = el.dataset.t; CODEOUT = null; renderAdmin(); });
   $('#rf').onclick = async () => { await loadAdmin(); adminRoster.init = false; LK = null; LD = null; LM = null; renderAdmin(); flash('갱신했습니다'); };
   ({ res: adminRes, prog: adminProg, att: adminAtt, links: adminLinks, roster: adminRoster, close: adminClose })[adminTab]();
 }
@@ -685,6 +715,70 @@ function adminLinks() {
   });
 }
 
+// ===== 접속 코드 발급·폐기 (구글 계정이 없는 평가자용) =====
+let CODEOUT = null; // 방금 발급한 코드 (이 화면을 벗어나면 다시 볼 수 없음)
+function localIso(d) { const p = n => ('0' + n).slice(-2); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+function defExpiry(days) { const d = new Date(); d.setDate(d.getDate() + days); d.setHours(23, 59, 0, 0); return localIso(d); }
+function codeCard() {
+  const list = (A.evaluators || []).filter(e => e.role !== '관리자' && e.role !== '서포터즈 담당+관리자');
+  const byId = {}; (A.codes || []).forEach(c => { byId[c.id] = c; });
+  const keep = document.getElementById('cexp') ? document.getElementById('cexp').value : '';
+  const inp = 'padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px';
+  let h = '<div class="card"><h3>접속 코드 <span class="sub">Google 계정이 없는 평가자용</span></h3>' +
+    '<div class="sub" style="margin-bottom:8px">평가자에게 <b>이름과 접속 코드</b>를 전달하면 Google 계정 없이 로그인해 평가할 수 있습니다. 코드는 발급할 때 한 번만 보이며(보안을 위해 원문은 저장하지 않습니다), 만료 일시가 지나거나 폐기하면 바로 로그인이 막힙니다. 관리자 계정은 Google 로그인만 가능합니다.</div>';
+  if (CODEOUT) {
+    h += '<div class="msg ok" style="margin-bottom:10px"><b>' + esc(CODEOUT.name) + '</b> 님의 접속 코드 <span style="font-size:22px;font-weight:700;letter-spacing:2px;margin:0 8px;user-select:all">' + esc(CODEOUT.code) + '</span>' +
+      '<div class="sub" style="margin-top:4px">만료 ' + esc(CODEOUT.expiresText) + ' · 이 화면을 벗어나면 다시 볼 수 없습니다. 잃어버리면 재발급하세요.</div>' +
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="ghost" id="cpcode">코드만 복사</button><button class="ghost" id="cpmsg">안내문 복사</button><button class="ghost" id="cpclose">닫기</button></div></div>';
+  }
+  h += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:14px">만료 일시</b><input type="datetime-local" id="cexp" style="' + inp + '" value="' + (keep || defExpiry(7)) + '">' +
+    [[1, '내일'], [3, '3일'], [7, '7일'], [14, '14일'], [30, '30일']].map(x => '<button class="ghost" data-cadd="' + x[0] + '" style="padding:6px 10px">' + x[1] + '</button>').join('') +
+    '</div><div class="sub" style="margin-bottom:8px">아래 「발급/재발급」과 「만료일 변경」은 위 만료 일시를 적용합니다. 최대 90일까지 정할 수 있습니다.</div>';
+  if (!list.length) return h + '<div class="sub">코드를 발급할 평가자가 없습니다.</div></div>';
+  h += '<div class="scroll"><table><tr><th class="l">평가자</th><th class="l">상태</th><th class="l">만료 일시</th><th></th></tr>' + list.map(e => {
+    const c = byId[e.id], on = c && c.state === '사용중';
+    const badge = !c ? '<span class="badge g">미발급</span>' : on ? '<span class="badge">사용중</span>' : '<span class="badge w">' + esc(c.state) + '</span>';
+    const btns = [];
+    btns.push('<button class="' + (on ? 'ghost' : '') + '" data-cact="issue" data-id="' + esc(e.id) + '" style="padding:6px 10px">' + (c ? '재발급' : '코드 발급') + '</button>');
+    if (c && c.state !== '폐기') btns.push('<button class="ghost" data-cact="exp" data-id="' + esc(e.id) + '" style="padding:6px 10px">만료일 변경</button>');
+    if (on) btns.push('<button class="ghost" data-cact="revoke" data-id="' + esc(e.id) + '" style="padding:6px 10px;color:var(--bad);border-color:var(--bad)">폐기</button>');
+    return '<tr><td class="l">' + esc(e.name) + ' <span class="sub">' + esc(e.role) + (e.team ? ' · ' + esc(e.team) : '') + '</span>' + (e.email ? ' <span class="badge g" title="Google 이메일도 등록됨">Google</span>' : '') + '</td><td class="l">' + badge + '</td><td class="l sub">' + (c ? esc(c.expiresText) : '-') + '</td><td style="white-space:nowrap">' + btns.join(' ') + '</td></tr>';
+  }).join('') + '</table></div><div class="sub" style="margin-top:8px">새로 추가한 평가자는 「평가자 저장」을 먼저 눌러야 코드를 발급할 수 있습니다. 재발급하면 이전 코드와 로그인 상태가 즉시 무효가 됩니다.</div></div>';
+  return h;
+}
+function copyText(t) {
+  const done = () => flash('복사했습니다');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => flash('복사하지 못했습니다. 직접 선택해 복사해 주세요.', 'err'));
+  else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { flash('복사하지 못했습니다. 직접 선택해 복사해 주세요.', 'err'); } ta.remove(); }
+}
+function bindCodeCard() {
+  const expMs = () => { const v = $('#cexp').value, ms = new Date(v).getTime(); if (!v || isNaN(ms)) throw new Error('만료 일시를 입력해 주세요.'); return ms; };
+  document.querySelectorAll('[data-cadd]').forEach(b => b.onclick = () => { $('#cexp').value = defExpiry(Number(b.dataset.cadd)); });
+  document.querySelectorAll('[data-cact]').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id, ev = A.evaluators.filter(x => x.id === id)[0] || { name: id };
+    const has = (A.codes || []).filter(c => c.id === id)[0];
+    try {
+      if (b.dataset.cact === 'issue') {
+        const ms = expMs();
+        if (has && has.state === '사용중' && !confirm(ev.name + ' 님의 기존 코드와 로그인 상태가 즉시 무효가 됩니다. 재발급할까요?')) return;
+        const j = await api('issueCode', { id: id, expires: ms });
+        A.codes = j.codes; CODEOUT = { name: ev.name, code: j.code, expiresText: j.expiresText }; adminRoster();
+      } else if (b.dataset.cact === 'exp') {
+        const j = await api('setCodeExpiry', { id: id, expires: expMs() });
+        A.codes = j.codes; adminRoster(); flash(ev.name + ' 님의 만료 일시를 ' + j.expiresText + ' 으로 바꿨습니다');
+      } else if (b.dataset.cact === 'revoke') {
+        if (!confirm(ev.name + ' 님의 접속 코드를 폐기할까요? 바로 로그인이 막힙니다.')) return;
+        const j = await api('revokeCode', { id: id });
+        A.codes = j.codes; adminRoster(); flash('폐기했습니다');
+      }
+    } catch (e) { fail(e); }
+  });
+  if (CODEOUT) {
+    $('#cpcode').onclick = () => copyText(CODEOUT.code);
+    $('#cpmsg').onclick = () => copyText('[서포터즈 평가 접속 안내]\n주소: ' + location.origin + location.pathname + '\n이름: ' + CODEOUT.name + '\n접속 코드: ' + CODEOUT.code + '\n사용 기한: ' + CODEOUT.expiresText + '까지\n※ 로그인 화면 아래쪽 「접속 코드로 로그인」에 입력하세요. 코드는 다른 사람에게 알려주지 마세요.');
+    $('#cpclose').onclick = () => { CODEOUT = null; adminRoster(); };
+  }
+}
 let RM = [], RE = [];
 function adminRoster() {
   if (!adminRoster.init) { RM = A.members.map(x => Object.assign({}, x)); RE = A.evaluators.map(x => Object.assign({}, x)); adminRoster.init = true; }
@@ -698,11 +792,13 @@ function adminRoster() {
     '<div class="card"><h3>서포터즈 명단 <span class="sub">' + RM.length + '명</span></h3><div class="sub" style="margin-bottom:8px">소속 팀은 직접 입력하거나 기존 팀 이름을 고르세요. 팀 이름이 같아야 같은 팀으로 집계됩니다.</div><div class="scroll"><table><tr><th class="l">ID</th><th class="l">이름</th><th class="l">소속 팀</th><th></th></tr>' +
     RM.map((m, i) => '<tr><td class="l sub">' + esc(m.id || '신규') + '</td><td><input style="' + inp + '" data-k="m" data-i="' + i + '" data-f="name" value="' + esc(m.name) + '"></td><td><input style="' + inp + '" list="tl" data-k="m" data-i="' + i + '" data-f="team" value="' + esc(m.team) + '"></td><td><button class="ghost" data-del="m" data-i="' + i + '">삭제</button></td></tr>').join('') +
     '</table></div><div class="foot"><button class="ghost" id="addm">+ 서포터 추가</button><button id="savem">서포터즈 저장</button></div></div>';
-  h += '<div class="card"><h3>평가자 명단 <span class="sub">' + RE.length + '명</span></h3><div class="sub" style="margin-bottom:8px">이메일은 평가자가 로그인할 Google 계정입니다. 멘토는 담당 팀을 입력하면 해당 팀과 팀원은 평가·집계에서 제외됩니다.</div><div class="scroll"><table><tr><th class="l">이름</th><th class="l">역할</th><th class="l">담당 팀(멘토)</th><th class="l">Google 이메일</th><th></th></tr>' +
+  h += '<div class="card"><h3>평가자 명단 <span class="sub">' + RE.length + '명</span></h3><div class="sub" style="margin-bottom:8px">이메일은 평가자가 로그인할 Google 계정입니다. <b>Google 계정이 없는 평가자는 이메일을 비워 두고</b> 저장한 뒤, 아래 「접속 코드」에서 코드를 발급하세요. 멘토는 담당 팀을 입력하면 해당 팀과 팀원은 평가·집계에서 제외됩니다.</div><div class="scroll"><table><tr><th class="l">이름</th><th class="l">역할</th><th class="l">담당 팀(멘토)</th><th class="l">Google 이메일</th><th></th></tr>' +
     RE.map((e, i) => '<tr><td><input style="' + inp + ';min-width:110px" data-k="e" data-i="' + i + '" data-f="name" value="' + esc(e.name) + '"></td><td><select data-k="e" data-i="' + i + '" data-f="role">' +
       ['관리자', '서포터즈 담당+관리자', '서포터즈 담당', '멘토'].map(r => '<option' + (e.role === r ? ' selected' : '') + '>' + r + '</option>').join('') + '</select></td><td><input style="' + inp + ';min-width:90px" list="tl" data-k="e" data-i="' + i + '" data-f="team" value="' + esc(e.team) + '"></td><td><input style="' + inp + ';min-width:200px" data-k="e" data-i="' + i + '" data-f="email" value="' + esc(e.email) + '" placeholder="name@gmail.com"></td><td><button class="ghost" data-del="e" data-i="' + i + '">삭제</button></td></tr>').join('') +
     '</table></div><div class="foot"><button class="ghost" id="adde">+ 평가자 추가</button><button id="savee">평가자 저장</button></div></div>';
+  h += codeCard();
   $('#body').innerHTML = h;
+  bindCodeCard();
   document.querySelectorAll('[data-k]').forEach(el => {
     const upd = () => { (el.dataset.k === 'm' ? RM : RE)[Number(el.dataset.i)][el.dataset.f] = el.value; };
     el.oninput = upd; el.onchange = upd;
